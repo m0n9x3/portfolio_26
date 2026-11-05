@@ -1,0 +1,68 @@
+import { animate } from 'animejs'
+import { useEffect, useRef } from 'react'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router'
+
+import { Footer } from './components/Footer'
+import { GlassCursor } from './components/GlassCursor'
+import { prefersReduced } from './lib/reduced'
+import { Nav } from './components/Nav'
+import { Preloader } from './components/Preloader'
+import { About } from './pages/About'
+import { Home } from './pages/Home'
+import { Work } from './pages/Work'
+
+function ScrollManager() {
+  const { pathname, hash } = useLocation()
+  useEffect(() => {
+    if (hash) {
+      const target = document.querySelector(hash)
+      if (target) {
+        window.setTimeout(() => target.scrollIntoView({ behavior: 'smooth' }), 50)
+        return
+      }
+    }
+    window.scrollTo({ top: 0 })
+  }, [pathname, hash])
+  return null
+}
+
+function Pages() {
+  const location = useLocation()
+  const main = useRef<HTMLElement>(null)
+  const first = useRef(true)
+
+  useEffect(() => {
+    const el = main.current
+    // The first paint is the preloader's; only route changes get the fade.
+    if (first.current) {
+      first.current = false
+      return
+    }
+    if (!el || prefersReduced()) return
+    animate(el, { opacity: [0, 1], translateY: [12, 0], duration: 350, ease: 'outQuart' })
+  }, [location.pathname])
+
+  return (
+    <main ref={main}>
+      <Routes location={location}>
+        <Route index element={<Home />} />
+        <Route path="work/:slug" element={<Work />} />
+        <Route path="about" element={<About />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </main>
+  )
+}
+
+export function App() {
+  return (
+    <BrowserRouter>
+      <Preloader />
+      <ScrollManager />
+      <Nav />
+      <Pages />
+      <Footer />
+      <GlassCursor />
+    </BrowserRouter>
+  )
+}

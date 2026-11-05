@@ -1,0 +1,565 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/noto-serif-kr';
+
+/* Pretendard, self-hosted so the site has no CDN dependency at render time.
+   Variable, 45 to 920. Everything sets in it. */
+@font-face {
+  font-family: 'Pretendard Variable';
+  src: url('/fonts/PretendardVariable.woff2') format('woff2-variations');
+  font-weight: 45 920;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-sans: 'Pretendard Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: 'Pretendard Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-suit: 'Pretendard Variable', ui-sans-serif, system-ui, sans-serif;
+  /* The one deliberate exception: "My Life" in the hero, set in a myeongjo.
+     Noto Serif KR carries the Korean myeongjo look; it has no true italic, so
+     the type stands upright instead of getting a synthetic slant. */
+  --font-serif-display: 'Noto Serif KR Variable', ui-serif, Georgia, 'Times New Roman', serif;
+
+  /* The same cool water the hero sits in: pale aqua grounds, ink that matches
+     the type over the pool, and a teal accent in place of a foreign blue. */
+  --color-bg: #eef5f6;
+  --color-surface: #f7fbfb;
+  --color-surface-2: #e3eef0;
+  --color-line: #d9e6e8;
+  --color-line-strong: #bed2d6;
+  --color-fg: #07191b;
+  --color-muted: #536f78;
+  --color-faint: #86a0a7;
+  --color-accent: #2f6d75;
+
+  --radius-control: 14px;
+  --radius-card: 24px;
+  --radius-image: 28px;
+
+  --animate-marquee: marquee 30s linear infinite;
+  --animate-drift-a: drift-a 22s ease-in-out infinite alternate;
+  --animate-drift-b: drift-b 26s ease-in-out infinite alternate;
+  --animate-drift-c: drift-c 30s ease-in-out infinite alternate;
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes drift-a {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to { transform: translate3d(-10%, 12%, 0) scale(1.12); }
+  }
+  @keyframes drift-b {
+    from { transform: translate3d(0, 0, 0) scale(1.05); }
+    to { transform: translate3d(14%, -8%, 0) scale(0.95); }
+  }
+  @keyframes drift-c {
+    from { transform: translate3d(0, 6%, 0) scale(0.95); }
+    to { transform: translate3d(-8%, -10%, 0) scale(1.15); }
+  }
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    corner-shape: squircle;
+    border-color: var(--color-line);
+  }
+  .round,
+  .round::before,
+  .round::after {
+    corner-shape: round;
+  }
+  html {
+    background: var(--color-bg);
+    color-scheme: light;
+    overscroll-behavior-y: none;
+  }
+
+  /* Type rules for the whole project:
+     · Pretendard only
+     · letter-spacing -3%
+     · sizes are even numbers and never below 12px
+     · two lines or more get 150% leading, a single line keeps its own */
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    letter-spacing: -0.03em;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+  }
+  button,
+  input,
+  textarea {
+    font: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+  }
+  p,
+  li,
+  dd,
+  dt,
+  figcaption,
+  blockquote,
+  textarea,
+  input,
+  label {
+    letter-spacing: -0.03em;
+    line-height: 1.5;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+  }
+  small {
+    font-size: 12px;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+  ::selection {
+    background: var(--color-fg);
+    color: var(--color-bg);
+  }
+  img {
+    user-select: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Display type: one typeface at a heavier weight, tracking held at -3% like the
+   rest of the site, leading tight because these lines never wrap. */
+@utility font-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+@utility font-display-wide {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+@utility text-balance {
+  text-wrap: balance;
+}
+@utility text-pretty {
+  text-wrap: pretty;
+}
+
+/* Underline that draws in from the left on hover. */
+@utility link-draw {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  transition: background-size 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  &:hover {
+    background-size: 100% 1px;
+  }
+}
+
+@utility image-frame {
+  background: var(--color-surface-2);
+  overflow: hidden;
+}
+
+/* Type read through the water: pale light under a dark surface, a touch of
+   softness, and the SVG displacement filter defined in the hero. */
+@utility hero-wet {
+  color: rgb(9 58 65 / 0.94);
+  text-shadow: 0 0 50px rgb(255 255 255 / 0.6);
+  filter: url(#hero-water) blur(0.4px);
+}
+
+/* The headline pass rises out of the pool on arrival, and again whenever the
+   line changes: it blur-fades out, the text is swapped underneath, then the
+   same rise brings the new line in. The motion itself is an anime.js timeline
+   in Hero.tsx; this only keeps the layer on its own compositor surface. */
+.title-layer {
+  will-change: opacity, filter, transform;
+}
+
+/* The statement writes itself in: every glyph starts as a pale ghost of the ink
+   and takes its colour as the scroll reaches it. */
+.statement-char {
+  color: rgb(15 47 104 / 0.18);
+}
+
+.statement-char[data-ink] {
+  color: #0f2f68;
+}
+
+/* A word is a word-sized block that owns its padding: neighbouring text is
+   pushed out by the box rather than sitting underneath it. The weight is
+   heavier in both states so the box landing on a word never re-flows the
+   line -- only its ink and background change. */
+.statement-word {
+  position: relative;
+  display: inline-block;
+  padding: 0.02em 0.14em;
+  border-radius: 6px;
+  font-weight: 600;
+  transition:
+    color 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.statement-word[data-boxed] {
+  background-color: #0f2f68;
+}
+
+.statement-word[data-boxed] .statement-char {
+  color: #fff;
+}
+
+/* The hover card for a highlighted word. Placeholder copy for now. */
+.statement-pop {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  z-index: 20;
+  padding: 6px 10px;
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 4px);
+  box-shadow: 0 10px 26px rgb(7 25 27 / 0.14);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.statement-word:hover .statement-pop {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* Once the WebGL water pass owns the type it paints every glyph itself, so
+   the DOM copy goes transparent and lives only for selection and assistive
+   tech. A pale wash keeps drag-selecting visible over the refracted pixels. */
+#hero-title[data-raster] span span,
+#hero-title[data-pending] span span {
+  color: transparent;
+}
+#hero-title[data-raster] span span::selection {
+  color: transparent;
+  background-color: rgb(143 199 205 / 0.4);
+  text-shadow: none;
+}
+
+/* ------------------------------------------------------------------ glass
+   One set of tokens per state. A surface opts in by carrying
+   data-glass="light | on-dark | dark" plus the .glass-surface class, and reads
+   the tokens; nothing hard-codes a tint or an edge. Every number is registered
+   so a state change interpolates instead of jumping. */
+
+@property --glass-tint-a { syntax: '<number>'; inherits: true; initial-value: 0.14; }
+@property --glass-r { syntax: '<number>'; inherits: true; initial-value: 255; }
+@property --glass-g { syntax: '<number>'; inherits: true; initial-value: 255; }
+@property --glass-b { syntax: '<number>'; inherits: true; initial-value: 255; }
+@property --glass-blur { syntax: '<length>'; inherits: true; initial-value: 2px; }
+@property --glass-sat { syntax: '<number>'; inherits: true; initial-value: 1.8; }
+@property --glass-bright { syntax: '<number>'; inherits: true; initial-value: 1.06; }
+@property --glass-edge-a1 { syntax: '<number>'; inherits: true; initial-value: 0.95; }
+@property --glass-edge-a2 { syntax: '<number>'; inherits: true; initial-value: 0.55; }
+@property --glass-hairline-a { syntax: '<number>'; inherits: true; initial-value: 0.3; }
+@property --glass-outline-a { syntax: '<number>'; inherits: true; initial-value: 0.06; }
+@property --glass-shadow-a { syntax: '<number>'; inherits: true; initial-value: 0.08; }
+@property --glass-inner { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --glass-ink-a { syntax: '<number>'; inherits: true; initial-value: 0.86; }
+@property --glass-ink2-a { syntax: '<number>'; inherits: true; initial-value: 0.7; }
+@property --glass-row-a { syntax: '<number>'; inherits: true; initial-value: 0; }
+
+/* How light a highlighted row gets: a lighter layer of the glass, never grey. */
+:root {
+  --glass-row-hover: 0.42;
+  --glass-row-selected: 0.76;
+}
+
+/* Light glass, dark text. The tint is white and thin: the colour has to come
+   from whatever sits behind, so it stays vivid rather than milky. */
+[data-glass='light'] {
+  --glass-r: 255;
+  --glass-g: 255;
+  --glass-b: 255;
+  --glass-tint-a: 0.1;
+  --glass-blur: 2px;
+  --glass-sat: 1.6;
+  --glass-bright: 1.04;
+  --glass-edge-a1: 0.8;
+  --glass-edge-a2: 0.45;
+  --glass-hairline-a: 0.25;
+  --glass-outline-a: 0.06;
+  --glass-shadow-a: 0.1;
+  --glass-inner: 0.7;
+  --glass-ink-rgb: 0 0 0;
+  --glass-ink-a: 0.86;
+  --glass-ink2-rgb: 60 60 67;
+  --glass-ink2-a: 0.7;
+  --glass-ink-blend: multiply;
+}
+
+/* The same glass over a dark area: the tint goes dark and thin, brightness
+   drops instead of the tint thickening, and the ink flips to light. */
+[data-glass='on-dark'] {
+  --glass-r: 16;
+  --glass-g: 18;
+  --glass-b: 22;
+  --glass-tint-a: 0.2;
+  --glass-blur: 2px;
+  --glass-sat: 1.7;
+  --glass-bright: 0.85;
+  --glass-edge-a1: 0.3;
+  --glass-edge-a2: 0.1;
+  --glass-hairline-a: 0.06;
+  --glass-outline-a: 0.35;
+  --glass-shadow-a: 0.12;
+  --glass-inner: 0.5;
+  --glass-ink-rgb: 255 255 255;
+  --glass-ink-a: 0.94;
+  --glass-ink2-rgb: 235 235 245;
+  --glass-ink2-a: 0.64;
+  --glass-ink-blend: plus-lighter;
+}
+
+/* Dark mode: dim by brightness rather than by piling on black, or it goes
+   muddy. Same edge and inner light at about a third, with a darker outline. */
+[data-glass='dark'] {
+  --glass-r: 20;
+  --glass-g: 20;
+  --glass-b: 24;
+  --glass-tint-a: 0.26;
+  --glass-blur: 2px;
+  --glass-sat: 1.6;
+  --glass-bright: 0.8;
+  --glass-edge-a1: 0.32;
+  --glass-edge-a2: 0.18;
+  --glass-hairline-a: 0.1;
+  --glass-outline-a: 0.45;
+  --glass-shadow-a: 0.2;
+  --glass-inner: 0.34;
+  --glass-ink-rgb: 255 255 255;
+  --glass-ink-a: 0.94;
+  --glass-ink2-rgb: 235 235 245;
+  --glass-ink2-a: 0.64;
+  --glass-ink-blend: plus-lighter;
+}
+
+[data-glass] {
+  transition:
+    --glass-r 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    --glass-g 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    --glass-b 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    --glass-tint-a 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    --glass-blur 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    --glass-sat 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    --glass-bright 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    --glass-edge-a1 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    --glass-edge-a2 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    --glass-hairline-a 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    --glass-outline-a 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    --glass-shadow-a 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    --glass-inner 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    --glass-ink-a 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    --glass-ink2-a 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    --glass-row-a 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* The body of the glass: a thin tint, a backdrop that carries the colour, and
+   the rim — two bright insets top-left and bottom-right, a 0.5px hairline, a
+   0.5px black outline outside it, and a soft cast shadow. */
+@utility glass-surface {
+  background-color: rgb(var(--glass-r) var(--glass-g) var(--glass-b) / var(--glass-tint-a));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)) brightness(var(--glass-bright));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)) brightness(var(--glass-bright));
+  box-shadow:
+    inset 1.5px 1.5px 1px -1px rgb(255 255 255 / var(--glass-edge-a1)),
+    inset -1.5px -1.5px 1px -1px rgb(255 255 255 / var(--glass-edge-a2)),
+    inset 0 0 0 0.5px rgb(255 255 255 / var(--glass-hairline-a)),
+    0 0 0 0.5px rgb(0 0 0 / var(--glass-outline-a)),
+    0 6px 24px rgb(0 0 0 / var(--glass-shadow-a));
+}
+
+/* Inner light, on its own layer inside the surface: a highlight falling from
+   the top left, brighter glows just inside the top and left rim, a little
+   shade at the bottom. One opacity scales the whole thing. */
+@utility glass-light {
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: var(--glass-inner);
+  background: radial-gradient(130% 100% at 20% 0%, rgb(255 255 255 / 0.2), transparent 55%);
+  box-shadow:
+    inset 7px 9px 14px -10px rgb(255 255 255 / 0.75),
+    inset -5px -7px 12px -10px rgb(0 0 0 / 0.22);
+}
+
+/* A highlighted row is a lighter layer of the glass, never a grey wash. */
+@utility glass-row {
+  position: absolute;
+  inset: 1.5px;
+  border-radius: inherit;
+  pointer-events: none;
+  background-color: rgb(255 255 255 / 1);
+  box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.9);
+  opacity: var(--glass-row-a);
+  transition: opacity 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Ink: everything drawn on the glass. Multiply on light glass so strokes and
+   fills darken rather than sit on top of it; plus-lighter on dark glass. */
+@utility glass-ink {
+  color: rgb(var(--glass-ink-rgb) / var(--glass-ink-a));
+  mix-blend-mode: var(--glass-ink-blend);
+}
+@utility glass-ink-2 {
+  color: rgb(var(--glass-ink2-rgb) / var(--glass-ink2-a));
+  mix-blend-mode: var(--glass-ink-blend);
+}
+
+/* The cursor: an optical lens rather than a pane of glass. The reference
+   (buka-studio's LensClone) traces refraction through a real lens in WebGL and
+   samples the page with the html-in-canvas API; that API is not available in
+   shipping browsers, so its four visual tells are rebuilt here instead:
+   sharp magnification, a Fresnel rim, edge dispersion, and bevel shading. */
+.glass-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 90;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* A perfect circle, whatever the project-wide squircle does to corners. */
+.glass-cursor .glass-lens,
+.glass-cursor .glass-magnify,
+.glass-cursor .glass-bevel,
+.glass-cursor .glass-dispersion {
+  corner-shape: round;
+  border-radius: 999px;
+}
+
+.glass-cursor .glass-lens {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  overflow: hidden;
+  opacity: 0;
+  /* Almost no body tint: a lens is clear, all of its presence comes from the
+     rim and the light it bends. The backdrop is sampled by the layer inside so
+     it can be scaled up like a lens. */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-color: rgb(var(--glass-r) var(--glass-g) var(--glass-b) / calc(var(--glass-tint-a) * 0.4));
+  box-shadow:
+    inset 0 1px 1.5px rgb(255 255 255 / 0.6),
+    inset 0 -1.5px 2px rgb(0 0 0 / 0.16),
+    inset 0 0 0 0.5px rgb(255 255 255 / 0.38),
+    0 0 0 0.5px rgb(0 0 0 / 0.14);
+  transition:
+    width 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    margin 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.22s ease;
+}
+
+/* The glass body under the copy: a little saturation and contrast so the lens
+   feels like glass where nothing is cloned (the hero). */
+.glass-cursor .glass-magnify {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  -webkit-backdrop-filter: saturate(1.12) brightness(1.02) contrast(1.04);
+  backdrop-filter: saturate(1.12) brightness(1.02) contrast(1.04);
+}
+
+
+/* Bevel: a specular sheen off the top left and a shade pulled in under the
+   bottom rim, so the glass has thickness without tint. */
+.glass-cursor .glass-bevel {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* Light hugs the top-left rim instead of washing the middle, so what the
+     lens magnifies keeps its own value. */
+  /* Light hugs the rim rather than filling the disc, so what sits behind the
+     glass still reads through it. */
+  background: radial-gradient(26% 22% at 22% 10%, rgb(255 255 255 / 0.14), transparent 72%);
+  box-shadow:
+    inset 1px 2px 3px -2px rgb(255 255 255 / 0.55),
+    inset -2px -3px 5px -4px rgb(0 0 0 / 0.22);
+}
+
+/* Dispersion: the coloured fringe a thick lens throws at its edge, held to a
+   hairline band so it never reads as a rainbow sticker. */
+.glass-cursor .glass-dispersion {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* Always on, gently: refraction is the one optical tell the glass can show
+     over text, where there is no texture to bend. It gains company on hover. */
+  opacity: 0.34;
+  transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  background: conic-gradient(
+    from 210deg,
+    rgb(255 70 130 / 0.5),
+    rgb(255 205 90 / 0.34),
+    rgb(130 255 195 / 0.3),
+    rgb(90 195 255 / 0.44),
+    rgb(190 130 255 / 0.4),
+    rgb(255 70 130 / 0.5)
+  );
+  -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 2.5px), #000 calc(100% - 1.5px), transparent 100%);
+  mask: radial-gradient(closest-side, transparent calc(100% - 2.5px), #000 calc(100% - 1.5px), transparent 100%);
+  filter: blur(0.4px);
+}
+
+.glass-cursor[data-visible='true'] .glass-lens { opacity: 1; }
+/* Base 40px, grown 120px: a little over 80pt larger, so the lens reads as a
+   loupe rather than a dot. */
+.glass-cursor[data-hover='true'] .glass-lens {
+  width: 120px;
+  height: 120px;
+  margin: -60px 0 0 -60px;
+}
+.glass-cursor[data-hover='true'] .glass-dispersion { opacity: 0.5; }
+
+.glass-cursor[data-press='true'] .glass-lens { width: 36px; height: 36px; margin: -18px 0 0 -18px; }
+
+/* Film grain over the hero's colour field. */
+@utility grain {
+  opacity: 0.22;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.3 0 0 0 0 0.3 0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
