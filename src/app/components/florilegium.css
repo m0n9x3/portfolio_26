@@ -1,0 +1,213 @@
+/* WORK 경험 타임라인 — 피셔아이 스트립 + 날짜 레인지.
+   사이트의 @theme 토큰을 그대로 쓰는 섹션. 클래스는 전부 fl- 접두사.
+   배경색 없음 — 페이지 배경(#eef5f6)이 그대로 보인다. */
+:root {
+  --fl-ink: var(--color-fg);
+  --fl-ink-soft: color-mix(in srgb, var(--color-fg) 55%, transparent);
+  --fl-rule: var(--color-line);
+  /* 이 섹션 안의 모든 텍스트는 사이트 본문/디스플레이인 Pretendard.
+     (Noto Serif KR은 히어로의 "My Life" 한 곳에서만 쓰는 액센트) */
+  --fl-serif: var(--font-display);
+  --fl-sans: var(--font-sans);
+  --fl-mono: var(--font-sans);
+}
+
+.fl-track { position: relative; }
+.fl-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  overflow: clip; /* like hidden, but focus can never scroll the pinned stage */
+}
+
+/* ------------------------------------------------------------- chrome */
+.fl-chrome { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+
+.fl-caption {
+  /* top 은 매 프레임 JS가 활성 카드 아래로 맞춘다(균일한 18px 간격). */
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 62%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.fl-caption__note {
+  font: 500 12px/1 var(--fl-mono);
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: var(--fl-ink-soft);
+}
+.fl-caption__title {
+  font-family: var(--fl-serif);
+  font-size: clamp(18px, 1.5vw, 24px);
+  line-height: 1.1;
+  animation: fl-roll 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes fl-roll { from { opacity: 0; transform: translateY(60%); filter: blur(4px); } }
+
+/* 하단 날짜: 현재 날짜(숫자 롤) — 진행선 — 범위 끝 */
+.fl-time {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(44px, 7vh, 90px);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 1.5vw, 26px);
+  font-family: var(--fl-serif);
+  font-size: clamp(22px, 2.6vw, 42px);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--color-fg) 72%, transparent);
+  white-space: nowrap;
+}
+
+/* 자리마다 하나의 숫자만 보이는 창. 안쪽 스트립(0–9)이 세로로 미끄러지며
+   숫자를 바꾼다 — 달력 타일 없이 텍스트 그대로. */
+.fl-now {
+  display: inline-flex;
+  align-items: center;
+}
+.fl-now__dot {
+  display: inline-block;
+  width: 0.4em;
+  text-align: center;
+}
+.fl-dial {
+  display: inline-block;
+  width: 0.6em;
+  height: 1em;
+  overflow: hidden;
+  text-align: center;
+}
+.fl-dial__strip {
+  display: flex;
+  flex-direction: column;
+  transform: translateY(calc(var(--d, 0) * -1em));
+  transition: transform 0.22s cubic-bezier(0.22, 0.7, 0.2, 1);
+  will-change: transform;
+}
+.fl-dial__strip > span {
+  display: block;
+  height: 1em;
+  line-height: 1em;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fl-dial__strip { transition: none; }
+}
+.fl-time__end {
+  font-family: var(--fl-serif);
+  font-size: clamp(14px, 1.2vw, 18px);
+  font-variant-numeric: tabular-nums;
+  color: var(--fl-ink-soft);
+}
+.fl-time__line {
+  position: relative;
+  width: clamp(60px, 11vw, 190px);
+  height: 1px;
+  background: var(--fl-rule);
+  overflow: hidden;
+}
+.fl-time__line i {
+  position: absolute;
+  inset: 0;
+  background: var(--fl-ink);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+/* 좌측 레이블: 사이트 내비 로고와 같은 수평 위치(max-w 1400 컨테이너 + px). */
+.fl-intro {
+  position: absolute;
+  left: calc(50% - min(700px, 50%) + 14px);
+  top: 45%;
+  transform: translate3d(0, -50%, 0);
+  margin: 0;
+  font-family: var(--fl-serif);
+  font-size: clamp(18px, 1.6vw, 26px);
+  line-height: 1.15;
+  color: var(--fl-ink-soft);
+}
+@media (min-width: 640px) {
+  .fl-intro { left: calc(50% - min(700px, 50%) + 32px); }
+}
+.fl-intro span,
+.fl-intro strong { display: block; }
+.fl-intro strong {
+  font-weight: 700;
+  color: var(--fl-ink);
+}
+@media (max-width: 900px) { .fl-intro { display: none; } }
+
+/* -------------------------------------------------------------- strip */
+.fl-strip { position: absolute; inset: 0; z-index: 1; }
+.fl-card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  will-change: transform, width, height;
+  transform-origin: 50% 50%;
+  appearance: none;
+}
+.fl-card:focus-visible { outline: 1px solid var(--fl-ink); outline-offset: 6px; }
+.fl-card__clip { position: absolute; inset: 0; overflow: hidden; clip-path: inset(0% 0% 0% 0%); }
+.fl-card img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.8s ease, filter 0.6s ease;
+  filter: grayscale(0.25) contrast(0.98);
+  user-select: none;
+}
+.fl-card img.is-loaded { opacity: 1; }
+.fl-card:hover img, .fl-card.is-active img { filter: none; }
+.fl-card__fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font: 500 12px/1.6 var(--fl-mono);
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: var(--fl-ink-soft);
+}
+
+.fl-loader {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 500 12px/1 var(--fl-mono);
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: var(--fl-ink-soft);
+}
+
+/* --------------------------------------------------------- responsive */
+@media (max-width: 700px) {
+  .fl-time { bottom: 48px; gap: 14px; }
+  .fl-time__line { width: 56px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fl-caption__title { animation: none; }
+  .fl-card img { transition: none; }
+}

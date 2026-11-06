@@ -3,15 +3,79 @@ import { ArrowUpRight, Plus } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 
-import { projects, services, site, testimonials } from '../../data/site'
+import { services, site, testimonials } from '../../data/site'
+import { FigmaSelect } from '../components/FigmaSelect'
+import { Florilegium } from '../components/Florilegium'
 import { Hero } from '../components/Hero'
 import { Lines, Magnetic, Parallax, Reveal } from '../components/motion'
 import { Statement } from '../components/Statement'
-import { WorkCard } from '../components/WorkCard'
+import { ToolPop } from '../components/ToolPop'
 import { cx } from '../lib/cx'
 import { prefersReduced } from '../lib/reduced'
 
+/* 프로필 키워드 팝오버 내용 — 호버 시 각 키워드 아래에 펼쳐지는
+   설명 목록(불릿 텍스트). */
+const PROFILE_TOOLS = {
+  design: [
+    'Photoshop 과 같은 그래픽 디자인 툴을 능숙하게 다뤄요',
+    'Illustrator 와 같은 벡터 디자인 툴을 능숙하게 다뤄요',
+    'Figma, adobeXD 와 같은 프로토타이핑, UIUX 툴을 능숙하게 다뤄요',
+    'Zeplin 과 같은 디자인-개발자 협업 툴 사용이 가능해요.',
+  ],
+  front: [
+    'HTML, CSS를 이용한 마크업 작성을 웹표준에 준수하게 할 수 있어요.',
+    'SEO, AEO 등에 대한 이해가 있어요.',
+    'AI를 통한 퍼블리싱, 프론트 작업을 정교하고 능숙하게 할 수 있어요.',
+    'Vue, React 와 같은 프레임워크 환경에서 컴포넌트 단위의 마크업 작업이 가능해요.',
+  ],
+  dev: [
+    '개발과 협업에 용이한 퍼블리싱이 가능해요.',
+    'JavaScript, jQuery, PHP 를 이용한 개발, 유지보수에 능숙해요.',
+    'React, Vue와 같은 프레임워크 환경에서의 유지보수가 가능해요.',
+    'Git, SVN 과 같은 형상 관리 시스템 내에서의 버전 관리를 통한 협업이 가능해요.',
+    'AI를 이용한 개발 작업을 유지보수와 보안을 놓치지 않고 할 수 있어요.',
+  ],
+}
+
 export function Home() {
+  const copyRef = useRef<HTMLDivElement>(null)
+
+  /* 팝오버는 단어 아래(다른 문단과 겹칠 수 있는 영역) 떠야 하므로,
+     마우스가 올라간 키워드가 속한 문단을 맨 앞으로 올린다(문단에
+     position:relative가 있어 z-index가 동작) — Statement 섹션과 같은
+     방식. 또 화면 오른쪽에 붙은 키워드는 팝오버를 오른쪽 가장자리로
+     붙여 창 밖으로 나가지 않게 한다. */
+  useEffect(() => {
+    const root = copyRef.current
+    if (!root) return
+    const words = Array.from(root.querySelectorAll<HTMLElement>('.tool-pop'))
+    const verses = Array.from(root.querySelectorAll('p'))
+    const clamp = () => {
+      for (const word of words) {
+        const room = window.innerWidth - 12 - word.getBoundingClientRect().left
+        if (room < 360) word.dataset.clamp = ''
+        else delete word.dataset.clamp
+      }
+    }
+    clamp()
+    window.addEventListener('resize', clamp)
+    document.fonts?.ready.then(clamp)
+    const onOver = (event: PointerEvent) => {
+      const target = event.target instanceof Element ? event.target : null
+      const word = target && target.closest('.tool-pop')
+      verses.forEach((verse) => { verse.style.zIndex = '' })
+      if (word) {
+        const verse = word.closest('p') as HTMLElement | null
+        if (verse) verse.style.zIndex = '2'
+      }
+    }
+    root.addEventListener('pointerover', onOver)
+    return () => {
+      root.removeEventListener('pointerover', onOver)
+      window.removeEventListener('resize', clamp)
+    }
+  }, [])
+
   return (
     <>
       <Hero />
@@ -19,48 +83,59 @@ export function Home() {
       {/* The statement, with the powder field behind it */}
       <Statement />
 
-      {/* Marquee */}
-      <div className="overflow-hidden border-y border-line py-5" aria-hidden>
-        <ul className="font-display flex w-max animate-marquee items-center gap-10 whitespace-nowrap text-[28px] text-fg/70 sm:text-[36px]">
-          {[...site.marquee, ...site.marquee].map((item, i) => (
-            <li key={i} className="flex items-center gap-10">
-              {item}
-              <span className="round size-2 rounded-full bg-accent" />
+      {/* Marquee: 프로필 뒤로 흐르는 유령 밴드. 글자 280px, 밴드 전체 투명도
+          2%. 프로필 섹션이 위(z-10)에 얹히고 이 밴드는 아래(z-0)에서 흐른다. */}
+      <div className="relative z-0 overflow-hidden py-8" aria-hidden>
+        <ul className="animate-marquee flex w-max items-center gap-20 whitespace-nowrap font-display text-[280px] leading-none opacity-[0.02] [animation-duration:80s]">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <li key={i} className="flex items-center gap-20">
+              <span className="font-light">DE:SIGN</span>
+              <span className="font-bold">MY LIFE</span>
             </li>
           ))}
         </ul>
       </div>
 
-      {/* Work */}
-      <section id="work" className="mx-auto max-w-[1400px] scroll-mt-20 px-5 pt-24 sm:px-8 sm:pt-32">
-        <div className="flex items-end justify-between">
-          <Lines as="h2" className="font-display text-[44px] sm:text-[64px]" lines={['Selected work']} />
-          <Reveal className="hidden text-[14px] text-muted sm:block">{projects.length} projects, 2024 to now</Reveal>
-        </div>
-        <div className="mt-12 grid gap-x-6 gap-y-14 md:grid-cols-2 lg:gap-x-8 lg:gap-y-20">
-          {projects.map((p, i) => (
-            <WorkCard key={p.slug} project={p} index={i} />
-          ))}
-        </div>
-      </section>
-
-      {/* About teaser */}
-      <section className="mx-auto max-w-[1400px] px-5 pt-32 sm:px-8 sm:pt-44">
+      {/* Profile: 텍스트 섹션 바로 아래. 위 여백을 줄여 위쪽으로 당겨
+          뒤의 마퀴 밴드(2% 투명 유령 글자)와 겹치게 하고, z-10으로
+          밴드보다 앞에 있게 한다. 바탕색은 페이지 배경(#eef5f6)을 그대로
+          써서 앞뒤 섹션과의 경계 없이 이어진다. */}
+      <section className="relative z-10 mx-auto max-w-[1400px] px-5 -mt-[260px] sm:px-8">
         <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-20">
           <Reveal>
-            <Parallax src="/images/portrait.jpg" alt={site.name} className="aspect-[3/4] max-w-[460px] rounded-image" strength={6} />
+            <FigmaSelect className="mx-auto max-w-[460px]" label="Profile.jpg" radius="28px">
+              <Parallax src="/images/portrait.jpg" alt={site.name} className="aspect-[3/4] rounded-image" strength={6} />
+            </FigmaSelect>
           </Reveal>
           <div className="flex flex-col justify-center">
             <Lines
               as="h2"
-              className="font-display text-balance text-[40px] sm:text-[56px] lg:text-[64px]"
-              lines={['I make the thing', 'and the thing', 'around the thing']}
+              className="font-display text-balance text-[24px]"
+              lines={['상상하고, 구체화하고 구현합니다.']}
             />
-            <Reveal delay={0.2} className="mt-8 max-w-xl text-pretty text-[18px] leading-relaxed text-muted">
-              <p>
-                Brands need products, products need websites, and websites need someone who cares about the last pixel and the first impression equally. I have spent ten years learning to do all three well, so clients do not have to explain their idea three times.
-              </p>
-              <p className="mt-4">I work independently, usually with one or two clients at a time, from a studio in {site.location}.</p>
+            <Reveal delay={0.2} className="relative z-10 mt-8 max-w-xl text-pretty text-[18px] leading-relaxed text-muted">
+              <div ref={copyRef}>
+                <p>
+                  안녕하세요, 최영재입니다.
+                  <br />
+                  상상을 구현하는 것을 즐거워했고, 여전히 즐거워하며 작업해요.
+                </p>
+                <p className="relative mt-4">
+                  <ToolPop word="디자인" items={PROFILE_TOOLS.design} />을 섬세하게 다루고,
+                  <br />
+                  다양한 환경에서의 <ToolPop word="프론트 작업" items={PROFILE_TOOLS.front} />을 접근성과 웹표준을 고려해 능숙하게 할 수 있어요.
+                </p>
+                <p className="relative mt-4">
+                  <ToolPop word="개발 지식" items={PROFILE_TOOLS.dev} />이 있어 개발자와의 협업에도 능한 편이고,
+                  <br />
+                  AI를 수준급으로 다룰 수 있어요.
+                </p>
+                <p className="relative mt-4">
+                  UX 에 관심이 많아 사용자를 생각한 섬세한 작업을 하는 것을 좋아해요.
+                  <br />
+                  다양한 사람들과 함께 상상을 현실로 만들어 가려고 해요.
+                </p>
+              </div>
             </Reveal>
             <Reveal delay={0.3} className="mt-8">
               <Link to="/about" className="link-draw inline-flex items-center gap-1.5 text-[16px] font-medium">
@@ -71,6 +146,9 @@ export function Home() {
           </div>
         </div>
       </section>
+
+      {/* Work — 임시: Florilegium 피셔아이 갤러리(프롬프트 기반). 이후 요청에 맞춰 수정. */}
+      <Florilegium />
 
       {/* Services */}
       <section className="mx-auto max-w-[1400px] px-5 pt-32 sm:px-8 sm:pt-44">
@@ -89,6 +167,7 @@ export function Home() {
       <section className="mx-auto max-w-[1400px] px-5 pt-32 sm:px-8 sm:pt-44">
         <Testimonials />
       </section>
+
     </>
   )
 }

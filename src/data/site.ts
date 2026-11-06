@@ -1,7 +1,7 @@
 // Everything about you lives here. The pages read from this file.
 
 export const site = {
-  name: 'CHOI YOUNG JAE',
+  name: 'DE:SIGN MY LIFE',
   role: 'Designer and creative developer',
   location: 'Lisbon',
   timezone: 'Europe/Lisbon',

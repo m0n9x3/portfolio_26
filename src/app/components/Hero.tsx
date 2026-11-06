@@ -44,6 +44,7 @@ export function Hero() {
   const beadCanvas = useRef<HTMLCanvasElement>(null)
   const titleCanvas = useRef<HTMLCanvasElement>(null)
   const pin = useRef<HTMLDivElement>(null)
+  const tintRef = useRef<HTMLDivElement>(null)
   const titleScene = useRef<{ repaint?: () => void } | null>(null)
   const [reduced] = useState(prefersReduced)
   const [delay, setDelay] = useState(0.4)
@@ -242,6 +243,30 @@ export function Hero() {
 
   useEffect(() => () => window.clearTimeout(swapTimer.current), [])
 
+  /* 배경 틴트: 핀 진행 80%에서 시작해, 핀이 풀린 뒤 30% 더 간 지점
+     (130%)에서 완료된다. 스크롤 이벤트에서 직접 읽어 1프레임 지연 없이
+     따라간다. */
+  useEffect(() => {
+    const section = pin.current
+    const tint = tintRef.current
+    if (!section || !tint) return
+    const set = () => {
+      const rect = section.getBoundingClientRect()
+      const runway = Math.max(1, rect.height - window.innerHeight)
+      // 핀이 풀린 뒤에도 rect.top은 계속 음수로 늘어나므로 1을 넘어 1.3까지
+      // 진행도가 흐른다. 여기서는 clamp하지 않고 그대로 쓴다.
+      const progress = -rect.top / runway
+      tint.style.opacity = String(Math.min(Math.max((progress - 0.8) / 0.5, 0), 1))
+    }
+    window.addEventListener('scroll', set, { passive: true })
+    window.addEventListener('resize', set)
+    set()
+    return () => {
+      window.removeEventListener('scroll', set)
+      window.removeEventListener('resize', set)
+    }
+  }, [])
+
 
   const lines = greeting ? GREETING_LINES : DESIGN_LINES
 
@@ -294,6 +319,12 @@ export function Hero() {
             </h1>
           </div>
         </div>
+
+        {/* 80% 지점부터, 핀 풀림 뒤 30%(130%)까지 다음 섹션(#e6f1f2) 초기색의
+            막이 물·글자 캔버스까지 한 번에 덮으면서 히어로 전체가
+            투명해진다. 덮개가 이 섹션의 모든 콘텐츠(z-30) 위에 가기 위해
+            z-40으로 둔다. */}
+        <div ref={tintRef} aria-hidden className="pointer-events-none absolute inset-0 z-40 bg-[#e6f1f2] opacity-0" />
 
         {/* The surface itself, over the type but never in the way of the pointer.
             The glass bead lives on its own transparent layer above the water, so

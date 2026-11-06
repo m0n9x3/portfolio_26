@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, NavLink, useLocation } from 'react-router'
+import { Link } from 'react-router'
 
 import { site } from '../../data/site'
 import { cx } from '../lib/cx'
@@ -16,7 +16,6 @@ export function useLocalTime() {
 }
 
 export function Nav() {
-  const location = useLocation()
   const [hidden, setHidden] = useState(false)
 
   useEffect(() => {
@@ -30,29 +29,18 @@ export function Nav() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const link = (to: string, label: string) => (
-    <NavLink
-      key={to}
-      to={to}
-      className={({ isActive }) => cx('link-draw text-[16px] transition-colors', isActive || (to !== '/' && location.pathname.startsWith(to)) ? 'text-fg' : 'text-muted hover:text-fg')}
-    >
-      {label}
-    </NavLink>
-  )
-
   return (
     <header className={cx('fixed inset-x-0 top-0 z-40 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]', hidden && '-translate-y-full')}>
       <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between gap-3 px-3.5 sm:gap-4 sm:px-8">
         {/* The name stays on one line: at 320px it used to wrap under the
-            menu and collide with it. */}
-        <Link to="/" className="shrink-0 whitespace-nowrap text-[16px] font-bold">
-          {site.name}
+            menu and collide with it. MY LIFE만 굵게, DE:SIGN은 300. */}
+        <Link to="/" aria-label="DE:SIGN MY LIFE" className="shrink-0 whitespace-nowrap text-[18px]">
+          <span className="font-[300]">DE:SIGN{' '}</span>
+          <span className="font-bold">MY LIFE</span>
         </Link>
-        <nav className="flex items-center gap-2.5 sm:gap-6">
-          {link('/#work', 'Work')}
-          {link('/about', 'About')}
-          <a href={`mailto:${site.email}`} className="link-draw text-[16px] text-muted transition-colors hover:text-fg">
-            Contact
+        <nav>
+          <a href="mailto:harok96y@naver.com" className="link-draw text-[16px] text-muted transition-colors hover:text-fg">
+            harok96y@naver.com
           </a>
         </nav>
       </div>

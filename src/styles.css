@@ -199,8 +199,8 @@
   will-change: opacity, filter, transform;
 }
 
-/* The statement writes itself in: every glyph starts as a pale ghost of the ink
-   and takes its colour as the scroll reaches it. */
+/* The statement writes itself in: every glyph starts as a pale ghost of the
+   ink and takes its full colour as the scroll reaches it. */
 .statement-char {
   color: rgb(15 47 104 / 0.18);
 }
@@ -219,6 +219,7 @@
   padding: 0.02em 0.14em;
   border-radius: 6px;
   font-weight: 600;
+  cursor: pointer;
   transition:
     color 200ms cubic-bezier(0.22, 1, 0.36, 1),
     background-color 240ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -232,34 +233,74 @@
   color: #fff;
 }
 
-/* The hover card for a highlighted word. Placeholder copy for now. */
+/* 형광펜 밑줄: 문구가 다 쓰여지면 왼쪽에서 오른쪽으로 스쳐간다. 왼쪽 끝은
+   상단에서부터 30° 비스듬히 깎이고, 오른쪽 끝은 하단에서부터 깎여
+   붓질과 비슷한 끝모양이 된다. 살짝 위로 올라가 글자 하단을 덮는다. */
+.statement-mark {
+  position: absolute;
+  left: 0.02em;
+  right: -0.04em;
+  bottom: 0.12em;
+  height: 0.38em;
+  background: rgb(255 214 60 / 0.55);
+  clip-path: polygon(
+    0.22em 0,
+    100% 0,
+    100% calc(100% - 0.22em),
+    calc(100% - 0.22em) 100%,
+    0 100%,
+    0 0.22em
+  );
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-mark][data-lit] .statement-mark {
+  transform: scaleX(1);
+}
+
+/* The hover card for a highlighted word: plain text below the word, left
+   aligned, held to the word's own left edge. */
 .statement-pop {
   position: absolute;
-  bottom: calc(100% + 10px);
-  left: 50%;
+  top: calc(100% + 8px);
+  left: 0;
   z-index: 20;
-  padding: 6px 10px;
+  padding: 8px 10px;
   border: 1px solid var(--color-line);
   border-radius: 10px;
   background: var(--color-surface);
   color: var(--color-fg);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 1.5;
   letter-spacing: -0.03em;
+  text-align: left;
   white-space: nowrap;
+  width: max-content;
   pointer-events: none;
   opacity: 0;
-  transform: translate(-50%, 4px);
-  box-shadow: 0 10px 26px rgb(7 25 27 / 0.14);
+  transform: translateY(4px);
+  box-shadow: 0 3px 10px rgb(7 25 27 / 0.07);
   transition:
     opacity 180ms ease,
     transform 180ms ease;
 }
 
+/* 문장이 각각 한 줄 블록 */
+.statement-pop span {
+  text-align: left;
+}
+
+.statement-word[data-clamp] .statement-pop {
+  left: auto;
+  right: 0;
+}
+
 .statement-word:hover .statement-pop {
   opacity: 1;
-  transform: translate(-50%, 0);
+  transform: translateY(0);
 }
 
 /* Once the WebGL water pass owns the type it paints every glyph itself, so
@@ -562,4 +603,215 @@
   opacity: 0.22;
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.3 0 0 0 0 0.3 0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+
+
+/* 프로필 사진 위 Figma 모사 연출(FigmaSelect). 오버레이는 사진 위에
+   절대 배치되며, 재생 중(is-live)에만 보이고 끝나면(is-done) 완전히
+   제거된다. 핑크색은 Tailwind pink-500(#ec4899). */
+.figma-select {
+  position: relative;
+  display: block;
+}
+
+.figma-select-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.figma-select-overlay.is-live {
+  opacity: 1;
+  visibility: visible;
+}
+
+.figma-select-overlay.is-done {
+  display: none;
+}
+
+/* 드래그로 만들어지는 선택 영역. 처음엔 사진과 함께 직각, 마지막에
+   실제 라운딩 값(JS가 인라인으로 애니메이션)이 적용된다. 완성
+   (is-solid)되면 단단한 2px 보더로 바뀐다. */
+.figma-frame {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  box-sizing: border-box;
+  border: 1px solid rgb(236 72 153 / 0.95);
+  background: rgb(236 72 153 / 0.07);
+}
+
+.figma-frame.is-solid {
+  border-width: 2px;
+  background: rgb(236 72 153 / 0.03);
+  box-shadow: 0 10px 30px rgb(236 72 153 / 0.18);
+}
+
+/* 왼쪽 위 레이블 칩: 재생 전엔 레이어 이름, 커서가 도착하면
+   "border-radius" 입력 칩으로 바뀐다(is-ask). 드래그가 시작되며
+   나타나는 효과(애니메이션이 820ms에 켠다)라 처음엔 투명해야 한다. */
+.figma-chip {
+  position: absolute;
+  left: -2px;
+  top: -27px;
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 6px;
+  background: #ec4899;
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0;
+  white-space: nowrap;
+  opacity: 0;
+  box-shadow: 0 2px 8px rgb(236 72 153 / 0.35);
+}
+
+.figma-chip-ask {
+  display: none;
+  align-items: center;
+  gap: 7px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 500;
+}
+
+.figma-chip.is-ask .figma-chip-name {
+  display: none;
+}
+
+.figma-chip.is-ask .figma-chip-ask {
+  display: inline-flex;
+}
+
+.figma-caret {
+  width: 1.5px;
+  height: 12px;
+  background: rgb(255 255 255 / 0.9);
+  animation: figma-caret 900ms steps(1, end) infinite;
+}
+
+@keyframes figma-caret {
+  50% {
+    opacity: 0;
+  }
+}
+
+.figma-typed {
+  font-weight: 700;
+}
+
+.figma-chip-value {
+  margin-left: 2px;
+  padding: 1px 7px;
+  border-radius: 5px;
+  background: #fff;
+  color: #ec4899;
+  font-weight: 700;
+  opacity: 0;
+}
+
+/* 핑크 Figma 화살표 커서. 흰색 윤곽선으로 사진 위에서도 잘 보인다.
+   top은 FigmaSelect의 드래그 시작 비율(28%)과 짝을 이룬다. */
+.figma-cursor {
+  position: absolute;
+  left: 0;
+  top: 28%;
+  opacity: 0;
+  color: #ec4899;
+}
+
+.figma-cursor svg {
+  fill: currentColor;
+  stroke: #fff;
+  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 0.25));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .figma-caret { animation: none; }
+}
+
+/* 프로필 문장 속 키워드 도구 팁: 테두리 박스 + 굵은 하단선. 마우스를
+   올리거나 키보드로 포커스하면 아래에 아이콘 3장이 팝오버로 뜬다. */
+.tool-pop {
+  position: relative;
+  display: inline-block;
+  padding: 0 0.4em 0.08em;
+  margin-block: 0.05em;
+  border: 1px solid var(--color-line);
+  border-bottom: 2px solid rgb(15 47 104 / 0.35);
+  border-radius: 8px;
+  cursor: default;
+  outline: none;
+  background: rgb(255 255 255 / 0.45);
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.tool-pop:hover,
+.tool-pop:focus-visible {
+  border-bottom-color: rgb(15 47 104 / 0.6);
+  background: rgb(255 255 255 / 0.75);
+}
+
+/* 팝오버: 키워드의 왼쪽 가장자리를 기준으로 아래에 열린 글 목록.
+   오른쪽 공간이 부족한 키워드([data-clamp])는 오른쪽 가장자리 기준으로
+   뒤집어 창 밖으로 나가지 않게 한다. */
+.tool-pop[data-clamp] .tool-popover {
+  left: auto;
+  right: 0;
+}
+
+.tool-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 20;
+  width: max-content;
+  max-width: min(340px, calc(100vw - 24px));
+  padding: 10px 12px;
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font-size: 13px;
+  letter-spacing: -0.02em;
+  text-align: left;
+  box-shadow: 0 3px 10px rgb(7 25 27 / 0.08), 0 1px 3px rgb(7 25 27 / 0.06);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.tool-popover ul {
+  display: grid;
+  gap: 6px;
+}
+
+.tool-popover li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45em;
+  line-height: 1.5;
+}
+
+.tool-popover li::before {
+  content: '-';
+  flex: none;
+  opacity: 0.45;
+}
+
+.tool-pop:hover .tool-popover,
+.tool-pop:focus-visible .tool-popover {
+  opacity: 1;
+  transform: translateY(0);
 }
