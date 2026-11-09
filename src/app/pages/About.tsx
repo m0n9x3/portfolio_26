@@ -1,4 +1,5 @@
 import { ArrowUpRight } from 'lucide-react'
+import { asset } from '../lib/asset'
 
 import { experience, site } from '../../data/site'
 import { Lines, Parallax, Reveal } from '../components/motion'
@@ -9,7 +10,7 @@ export function About() {
       <Lines as="h1" className="font-display text-balance text-[clamp(44px,7.5vw,112px)]" lines={['Designer, developer,', 'occasional typographer']} />
       <div className="mt-14 grid gap-12 lg:grid-cols-[1fr_1.3fr] lg:gap-24">
         <Reveal>
-          <Parallax src="/images/portrait.jpg" alt={site.name} className="aspect-[3/4] rounded-image" strength={6} />
+          <Parallax src={asset('/images/portrait.jpg')} alt={site.name} className="aspect-[3/4] rounded-image" strength={6} />
           <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-[14px]">
             {site.socials.map((s) => (
               <li key={s.label}>

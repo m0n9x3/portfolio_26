@@ -1,4 +1,5 @@
 import { ArrowUpRight } from 'lucide-react'
+import { asset } from '../lib/asset'
 import { useEffect, useRef, useState } from 'react'
 
 import { site } from '../../data/site'
@@ -38,10 +39,10 @@ const PROFILE_TOOLS = {
    판이나 아이콘 없이 텍스트만 두고, 회사 이름만 링크로 읽히게 한다.
    실제 회사·주소로 바꿀 때는 이 배열만 고치면 된다. */
 const CREDITS = [
-  { title: 'Brand identity', places: ['BDSCAST'], image: '/images/aurora.jpg' },
-  { title: 'Product design', places: ['MECROSS'], image: '/images/meridian.jpg' },
-  { title: 'Websites', places: ['BDSCAST'], image: '/images/halcyon.jpg' },
-  { title: 'Creative development', places: ['MECROSS'], image: '/images/fold.jpg' },
+  { title: 'Brand identity', places: ['BDSCAST'], image: asset('/images/aurora.jpg') },
+  { title: 'Product design', places: ['MECROSS'], image: asset('/images/meridian.jpg') },
+  { title: 'Websites', places: ['BDSCAST'], image: asset('/images/halcyon.jpg') },
+  { title: 'Creative development', places: ['MECROSS'], image: asset('/images/fold.jpg') },
 ]
 
 export function Home() {
@@ -111,7 +112,7 @@ export function Home() {
         <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-20">
           <Reveal>
             <FigmaSelect className="mx-auto max-w-[460px]" label="Profile.jpg" radius="28px">
-              <Parallax src="/images/portrait.jpg" alt={site.name} className="aspect-[3/4] rounded-image" strength={6} />
+              <Parallax src={asset('/images/portrait.jpg')} alt={site.name} className="aspect-[3/4] rounded-image" strength={6} />
             </FigmaSelect>
           </Reveal>
           <div className="flex flex-col justify-center">

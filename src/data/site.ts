@@ -1,3 +1,4 @@
+import { asset } from '../app/lib/asset'
 // Everything about you lives here. The pages read from this file.
 
 export const site = {
@@ -40,7 +41,7 @@ export const projects: Project[] = [
     client: 'Aurora Climate',
     category: 'Brand and website',
     year: '2026',
-    cover: '/images/aurora.jpg',
+    cover: asset('/images/aurora.jpg'),
     tint: '#efe4d8',
     summary: 'A brand and launch site for a climate-tech company that wanted to feel like weather, not like a dashboard.',
     role: ['Art direction', 'Identity', 'Website'],
@@ -59,7 +60,7 @@ export const projects: Project[] = [
     client: 'Meridian Bank',
     category: 'Product design',
     year: '2026',
-    cover: '/images/meridian.jpg',
+    cover: asset('/images/meridian.jpg'),
     tint: '#dbe0f5',
     summary: 'Redesigning a banking app around the one question people actually have: can I afford this?',
     role: ['Product design', 'Design system', 'Prototyping'],
@@ -77,7 +78,7 @@ export const projects: Project[] = [
     client: 'Self-initiated',
     category: 'Typeface',
     year: '2025',
-    cover: '/images/fold.jpg',
+    cover: asset('/images/fold.jpg'),
     tint: '#e8e2d6',
     summary: 'A high-contrast serif drawn for editorial headlines, with a specimen printed by hand.',
     role: ['Type design', 'Print'],
@@ -95,7 +96,7 @@ export const projects: Project[] = [
     client: 'Halcyon Hotels',
     category: 'Website',
     year: '2025',
-    cover: '/images/halcyon.jpg',
+    cover: asset('/images/halcyon.jpg'),
     tint: '#ebe3d6',
     summary: 'A booking site for a small group of hotels that feels like checking in, not checking out.',
     role: ['Design', 'Development'],
@@ -114,7 +115,7 @@ export const projects: Project[] = [
     client: 'Vela Records',
     category: 'Art direction',
     year: '2024',
-    cover: '/images/nocturne.jpg',
+    cover: asset('/images/nocturne.jpg'),
     tint: '#d8d4e4',
     summary: 'A visual identity for a debut album that had to work as a vinyl sleeve, a stage and a four-second loop.',
     role: ['Art direction', 'Motion'],
@@ -131,7 +132,7 @@ export const projects: Project[] = [
     client: 'Kite Outdoors',
     category: 'E-commerce',
     year: '2024',
-    cover: '/images/kite.jpg',
+    cover: asset('/images/kite.jpg'),
     tint: '#d9e6dc',
     summary: 'A storefront for an outdoor brand that sells fewer, better things, and wanted the site to say so.',
     role: ['Design', 'Development'],

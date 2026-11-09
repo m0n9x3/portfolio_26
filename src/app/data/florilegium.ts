@@ -1,3 +1,4 @@
+import { asset } from '../lib/asset'
 /* WORK 경험 타임라인 — 열 개의 스톱.
    사진은 public/images/florilegium/ 에 두었다(빌드 없이 URL로 서빙).
    7번과 10번의 파일 스왑은 원본 구성: 다크 올리움이 마지막 스톱. */
@@ -12,18 +13,18 @@ export type Plate = {
 /* 틴트는 사이트 팔레트의 쿨한 아쿠아 래더(surface-2 / line / bg / fg)로
    맞춘 값들이다. */
 export const PLATES: Plate[] = [
-  { src: '/images/florilegium/stem-01.webp', title: 'Anemone, first light', note: 'Window, east', tint: '#e3eef0' },
-  { src: '/images/florilegium/stem-02.webp', title: 'Jasmine before breakfast', note: 'Kitchen table', tint: '#2f4a4f' },
-  { src: '/images/florilegium/stem-03.webp', title: 'Cosmos in the stairwell', note: 'Landing', tint: '#d9e6e8' },
-  { src: '/images/florilegium/stem-04.webp', title: 'Peony, half asleep', note: 'Study', tint: '#0f2a2d' },
-  { src: '/images/florilegium/stem-05.webp', title: 'Poppy, in grey', note: 'Hallway', tint: '#f7fbfb' },
-  { src: '/images/florilegium/stem-06.webp', title: 'Lily at noon', note: 'Garden room', tint: '#cfe0e3' },
+  { src: asset('/images/florilegium/stem-01.webp'), title: 'Anemone, first light', note: 'Window, east', tint: '#e3eef0' },
+  { src: asset('/images/florilegium/stem-02.webp'), title: 'Jasmine before breakfast', note: 'Kitchen table', tint: '#2f4a4f' },
+  { src: asset('/images/florilegium/stem-03.webp'), title: 'Cosmos in the stairwell', note: 'Landing', tint: '#d9e6e8' },
+  { src: asset('/images/florilegium/stem-04.webp'), title: 'Peony, half asleep', note: 'Study', tint: '#0f2a2d' },
+  { src: asset('/images/florilegium/stem-05.webp'), title: 'Poppy, in grey', note: 'Hallway', tint: '#f7fbfb' },
+  { src: asset('/images/florilegium/stem-06.webp'), title: 'Lily at noon', note: 'Garden room', tint: '#cfe0e3' },
   // plate 7 — 유리잔 (스왑: stem-10.webp)
-  { src: '/images/florilegium/stem-10.webp', title: 'A stem in glass', note: 'Bathroom sill', tint: '#eef5f6' },
-  { src: '/images/florilegium/stem-08.webp', title: 'Anemone, again', note: 'Window, west', tint: '#d3e2e4' },
-  { src: '/images/florilegium/stem-09.webp', title: 'Everlasting', note: 'Mantelpiece', tint: '#bed2d6' },
+  { src: asset('/images/florilegium/stem-10.webp'), title: 'A stem in glass', note: 'Bathroom sill', tint: '#eef5f6' },
+  { src: asset('/images/florilegium/stem-08.webp'), title: 'Anemone, again', note: 'Window, west', tint: '#d3e2e4' },
+  { src: asset('/images/florilegium/stem-09.webp'), title: 'Everlasting', note: 'Mantelpiece', tint: '#bed2d6' },
   // plate 10 — 다크 올리움 (스왑: stem-07.webp)
-  { src: '/images/florilegium/stem-07.webp', title: 'Allium after dark', note: 'Bedside', tint: '#0b1c1e', focus: '50% 68%' },
+  { src: asset('/images/florilegium/stem-07.webp'), title: 'Allium after dark', note: 'Bedside', tint: '#0b1c1e', focus: '50% 68%' },
 ]
 
 /* 날짜는 임시로 71일 간격, 22.01.01 부터. 실제 포트폴리오 이력으로 바꿀 때는

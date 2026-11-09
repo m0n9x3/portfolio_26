@@ -4,6 +4,7 @@
    마지막에 강아지 사진이 뜨고 그 둘레에 문장이 붙는다. 등장은 뷰포트에
    들어올 때 한 번만 켜고, 모션 최소화 설정에서는 바로 정착 상태로 그린다. */
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { asset } from '../lib/asset'
 
 import { prefersReduced } from '../lib/reduced'
 import './finale.css'
@@ -151,7 +152,7 @@ function Dog({ vw }: { vw: number }) {
       <div className="-translate-x-1/2">
         <div className="fin-sway" style={{ animationDuration: `${base.sway}ms` }}>
           <img
-              src="/images/ganadi.gif"
+              src={asset('/images/ganadi.gif')}
               alt=""
               width={200}
               height={200}
@@ -260,7 +261,7 @@ export function Footer() {
         {/* 그림자는 감싼 상자에 준다 — 팩의 블러 인(filter)이 상쇄되지 않게. */}
         <div className="fin-bag-cast w-fit">
           <img
-            src="/images/iv-bag.webp"
+            src={asset('/images/iv-bag.webp')}
             alt=""
             width={780}
             height={1326}
