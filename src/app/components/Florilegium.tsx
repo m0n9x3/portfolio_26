@@ -509,11 +509,19 @@ export function Florilegium() {
     let lastY = window.scrollY
     let lastT = performance.now()
     let velocity = 0
+    /* 손가락이 화면에 닿아 있는 동안. 이때는 스냅을 걸지 않는다 — 대고
+       멈춘 순간 페이지가 발밑에서 미끄러지면 안 된다. */
+    let touching = false
 
     const stopSnap = () => {
       if (!snapping) return
       snapping = false
       cancelAnimationFrame(snapRaf)
+    }
+
+    const armSnap = () => {
+      window.clearTimeout(snapTimer)
+      snapTimer = window.setTimeout(snapToNearest, SNAP.delay)
     }
 
     /* 크리티컬 댐핑: a = ω²(목표 - 현재) - 2ω·속도. 초기 속도를 그대로
@@ -534,7 +542,7 @@ export function Florilegium() {
     }
 
     const snapToNearest = () => {
-      if (snapping || !st.isActive) return
+      if (snapping || touching || !st.isActive) return
       if (tweenRef.current?.isActive()) return
       const steps = N - 1
       const p = clamp(st.progress)
@@ -566,8 +574,7 @@ export function Florilegium() {
       if (!snapping) velocity = lerp(velocity, ((y - lastY) / dt) * 1000, 0.4)
       lastY = y
       lastT = now
-      window.clearTimeout(snapTimer)
-      snapTimer = window.setTimeout(snapToNearest, SNAP.delay)
+      armSnap()
     }
 
     /* 휠·터치·클릭이 오면 스냅을 바로 놓아준다 — 스크롤을 방해하지 않는다. */
@@ -578,9 +585,22 @@ export function Florilegium() {
       lastT = performance.now()
     }
 
+    /* 터치는 시작·종료를 따로 본다 — 드래그 중에는 스냅을 막고, 손을 뗀
+       뒤(관성 스크롤이 끝난 뒤)에야 정렬 기회를 준다. */
+    const onTouchStart = () => {
+      touching = true
+      yieldToUser()
+    }
+    const onTouchEnd = () => {
+      touching = false
+      armSnap()
+    }
+
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('wheel', yieldToUser, { passive: true })
-    window.addEventListener('touchstart', yieldToUser, { passive: true })
+    window.addEventListener('touchstart', onTouchStart, { passive: true })
+    window.addEventListener('touchend', onTouchEnd, { passive: true })
+    window.addEventListener('touchcancel', onTouchEnd, { passive: true })
     window.addEventListener('pointerdown', yieldToUser, { passive: true })
 
     gsap.ticker.add(frame)
@@ -588,7 +608,9 @@ export function Florilegium() {
     return () => {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('wheel', yieldToUser)
-      window.removeEventListener('touchstart', yieldToUser)
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchend', onTouchEnd)
+      window.removeEventListener('touchcancel', onTouchEnd)
       window.removeEventListener('pointerdown', yieldToUser)
       cancelAnimationFrame(snapRaf)
       window.clearTimeout(snapTimer)
