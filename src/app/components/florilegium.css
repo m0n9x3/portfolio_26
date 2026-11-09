@@ -1,6 +1,7 @@
 /* WORK 경험 타임라인 — 피셔아이 스트립 + 날짜 레인지.
    사이트의 @theme 토큰을 그대로 쓰는 섹션. 클래스는 전부 fl- 접두사.
    배경색 없음 — 페이지 배경(#eef5f6)이 그대로 보인다. */
+@import '@fontsource/lobster';
 :root {
   --fl-ink: var(--color-fg);
   --fl-ink-soft: color-mix(in srgb, var(--color-fg) 55%, transparent);
@@ -8,11 +9,15 @@
   /* 이 섹션 안의 모든 텍스트는 사이트 본문/디스플레이인 Pretendard.
      (Noto Serif KR은 히어로의 "My Life" 한 곳에서만 쓰는 액센트) */
   --fl-serif: var(--font-display);
-  --fl-sans: var(--font-sans);
   --fl-mono: var(--font-sans);
 }
 
+.fl-root { margin-top: clamp(120px, 16vw, 240px); }
 .fl-track { position: relative; }
+/* 섹션 전체는 스크롤에 묶여 페이드 인한다(프레임 루프가 .fl-root 의
+   opacity 를 직접 맞춘다). 그 안의 물은 항상 칠해져 있고, 앞 단계만
+   숨어 있다가 드러난다. */
+.fl-root, .fl-intro-reveal, .fl-chrome, .fl-strip { opacity: 0; }
 .fl-stage {
   position: sticky;
   top: 0;
@@ -22,8 +27,33 @@
   overflow: clip; /* like hidden, but focus can never scroll the pinned stage */
 }
 
+/* 히어로의 물: 같은 씬(caustics + 잔물결)을 배경으로 재사용한다. 카드 아래
+   (z-0)에서 흐르고, 히어로와 같은 방사형 물빛 위에 앉는다. */
+.fl-water-bg, .fl-water {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* 위 가장자리가 페이지 배경으로 녹아들어, 프로필 섹션과의 이음매가
+     선처럼 남지 않는다. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 30%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 30%);
+}
+.fl-water-bg {
+  z-index: 0;
+  background: radial-gradient(125% 95% at 50% -15%, #ffffff 0%, #ffffff 38%, #fbfdfd 62%, #f3f8f8 84%, #eaf3f3 100%);
+}
+.fl-water {
+  z-index: 2; /* 판 위·크롬 아래: 판은 물속에서 그려지고 활성 판만 위로 뜬다 */
+  overflow: hidden;
+}
+.fl-water canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 /* ------------------------------------------------------------- chrome */
-.fl-chrome { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.fl-chrome { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
 
 .fl-caption {
   /* top 은 매 프레임 JS가 활성 카드 아래로 맞춘다(균일한 18px 간격). */
@@ -36,12 +66,6 @@
   align-items: center;
   gap: 6px;
   text-align: center;
-}
-.fl-caption__note {
-  font: 500 12px/1 var(--fl-mono);
-  letter-spacing: 0;
-  text-transform: uppercase;
-  color: var(--fl-ink-soft);
 }
 .fl-caption__title {
   font-family: var(--fl-serif);
@@ -60,11 +84,12 @@
   display: flex;
   align-items: center;
   gap: clamp(12px, 1.5vw, 26px);
+  /* 좌측 현재 날짜도 우측 범위 끝과 같은 타이포(크기・색)를 쓴다. */
   font-family: var(--fl-serif);
-  font-size: clamp(22px, 2.6vw, 42px);
+  font-size: clamp(14px, 1.2vw, 18px);
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  color: color-mix(in srgb, var(--color-fg) 72%, transparent);
+  color: var(--fl-ink-soft);
   white-space: nowrap;
 }
 
@@ -105,9 +130,7 @@
 }
 .fl-time__end {
   font-family: var(--fl-serif);
-  font-size: clamp(14px, 1.2vw, 18px);
   font-variant-numeric: tabular-nums;
-  color: var(--fl-ink-soft);
 }
 .fl-time__line {
   position: relative;
@@ -124,31 +147,37 @@
   transform: scaleX(0);
 }
 
-/* 좌측 레이블: 사이트 내비 로고와 같은 수평 위치(max-w 1400 컨테이너 + px). */
-.fl-intro {
+.fl-intro-reveal {
   position: absolute;
-  left: calc(50% - min(700px, 50%) + 14px);
-  top: 45%;
-  transform: translate3d(0, -50%, 0);
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.fl-intro {
   margin: 0;
-  font-family: var(--fl-serif);
-  font-size: clamp(18px, 1.6vw, 26px);
-  line-height: 1.15;
-  color: var(--fl-ink-soft);
+  /* Lobster는 폭이 훨씬 넓어 같은 크기면 화면을 넘친다. */
+  font-family: 'Lobster', var(--fl-serif);
+  font-size: clamp(30px, 8vw, 140px);
+  line-height: 1;
+  white-space: nowrap;
+  /* 두 단어가 같은 잉크. 반투명을 쓰면 Lobster 의 겹치는 활자에서
+     색이 두 번 합성돼 얼룩처럼 보인다 — 배경색과 섞은 불투명 색을 쓴다. */
+  color: color-mix(in srgb, var(--color-fg) 58%, var(--color-bg));
 }
-@media (min-width: 640px) {
-  .fl-intro { left: calc(50% - min(700px, 50%) + 32px); }
-}
+/* Lobster는 단일 웨이트라 굵기를 합성하지 않는다. 두 단어 모두 같은 잉크. */
 .fl-intro span,
-.fl-intro strong { display: block; }
 .fl-intro strong {
-  font-weight: 700;
-  color: var(--fl-ink);
+  font-weight: 400;
+  color: inherit;
 }
-@media (max-width: 900px) { .fl-intro { display: none; } }
 
 /* -------------------------------------------------------------- strip */
-.fl-strip { position: absolute; inset: 0; z-index: 1; }
+/* z-index를 주지 않는다: 카드(1) → 물(2) → 활성 카드(3) → 크롬(4)이
+   같은 스태킹 컨텍스트에서 쌓이도록. */
+.fl-strip { position: absolute; inset: 0; z-index: 3; }
 .fl-card {
   position: absolute;
   left: 0;
@@ -158,12 +187,27 @@
   cursor: pointer;
   overflow: hidden;
   border-radius: var(--radius-card);
+  /* 판은 항상 물 캔버스 위에 있다. 물속 상태는 불투명도 0으로 숨겨지고
+     보이는 픽셀은 물 셰이더의 레이어가 맡는다. */
+  z-index: 3;
   will-change: transform, width, height;
   transform-origin: 50% 50%;
   appearance: none;
+  transition: box-shadow 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .fl-card:focus-visible { outline: 1px solid var(--fl-ink); outline-offset: 6px; }
-.fl-card__clip { position: absolute; inset: 0; overflow: hidden; clip-path: inset(0% 0% 0% 0%); }
+
+/* 활성 판: 범위는 과하게 크게, 밀도는 맑게. 판이 물 위로 떠오른 느낌.
+   data-surfaced 는 프레임 루프가 교차 페이드와 함께 직접 맞춘다. */
+.fl-card.is-active,
+.fl-card[data-surfaced='1'] {
+  box-shadow:
+    0 30px 70px -10px rgba(6, 40, 55, 0.16),
+    0 90px 170px -30px rgba(6, 40, 55, 0.13),
+    0 160px 260px -60px rgba(6, 40, 55, 0.1);
+}
+
+.fl-card__clip { position: absolute; inset: 0; overflow: hidden; }
 .fl-card img {
   position: absolute;
   inset: 0;
@@ -172,11 +216,13 @@
   object-fit: cover;
   opacity: 0;
   transition: opacity 0.8s ease, filter 0.6s ease;
-  filter: grayscale(0.25) contrast(0.98);
+  /* WebGL 물이 없는 환경에서만 쓰이는 옅은 색보정 — 물이 그리는 동안에는
+     판 픽셀을 물 셰이더가 맡으므로 이 이미지는 숨겨진다. */
+  filter: saturate(0.72) brightness(0.95);
   user-select: none;
 }
 .fl-card img.is-loaded { opacity: 1; }
-.fl-card:hover img, .fl-card.is-active img { filter: none; }
+.fl-card.is-active img { filter: none; }
 .fl-card__fallback {
   position: absolute;
   inset: 0;
@@ -191,7 +237,7 @@
 
 .fl-loader {
   position: absolute;
-  z-index: 5;
+  z-index: 6;
   inset: 0;
   display: grid;
   place-items: center;

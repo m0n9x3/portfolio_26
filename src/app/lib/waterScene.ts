@@ -47,6 +47,7 @@ uniform sampler2D uTitle;
 uniform vec4 uTitleRect;
 uniform float uTitleOn;
 uniform float uTitleOnly;
+uniform float uTitlePhoto;
 
 // The caustic net: four warped gratings whose crossings are the places where a
 // surface focuses light onto the floor. Sharpened into filaments, not blobs.
@@ -122,21 +123,46 @@ void main() {
     if (tUv.x > 0.0 && tUv.x < 1.0 && tUv.y > 0.0 && tUv.y < 1.0) {
       vec2 lo = uTitleRect.xy;
       vec2 hi = uTitleRect.xy + uTitleRect.zw;
-      // Heat haze: a slow ambient shimmer that owes nothing to the ripples,
-      // so the air over the letters never quite settles.
-      vec2 haze = vec2(
-        sin(uv.x * 21.0 + uTime * 1.15) * 0.55 + sin(uv.x * 8.0 - uTime * 0.55) * 0.45,
-        cos(uv.y * 17.0 - uTime * 0.95) * 0.50 + sin(uv.y * 6.0 + uTime * 0.50) * 0.50
-      ) * 0.003;
-      vec4 tSub = texture2D(uTitle, clamp(uv + haze, lo, hi));
-      vec3 textCol = clamp(vec3(
-        texture2D(uTitle, clamp(uv + bend * 0.90 + haze * 1.15, lo, hi)).r,
-        tSub.g,
-        texture2D(uTitle, clamp(uv + bend * 0.60 + haze * 0.85, lo, hi)).b
-      ), 0.0, 1.0);
-      textCol = mix(textCol, vec3(1.0), lit * 0.20);
-      float textA = clamp(tSub.a, 0.0, 1.0);
-      titleLayer = vec4(textCol * textA, textA);
+      if (uTitlePhoto > 0.5) {
+        // A photograph, not glyphs. The whole plate — outline included — drifts
+        // with the wave. The drift is measured over a wide stencil so it stays
+        // smooth: a per-cell slope would cut the rounded border into steps.
+        // Colour and alpha come from the same sample, so no fringe appears.
+        vec2 wide = uTexel * 4.0;
+        float wl = texture2D(uHmap, uv - vec2(wide.x, 0.0)).r * 2.0 - 1.0;
+        float wr = texture2D(uHmap, uv + vec2(wide.x, 0.0)).r * 2.0 - 1.0;
+        float wd = texture2D(uHmap, uv - vec2(0.0, wide.y)).r * 2.0 - 1.0;
+        float wu = texture2D(uHmap, uv + vec2(0.0, wide.y)).r * 2.0 - 1.0;
+        vec2 sim = vec2(wr - wl, wu - wd) * 0.07;
+        // A slow current runs even in still water: long wavelengths bend the
+        // border as one surface, where the simulated slope alone would give it
+        // the blob size of a height-field cell.
+        vec2 current = vec2(
+          sin(uv.y * 5.0 + uTime * 0.42) + 0.6 * sin(uv.y * 2.3 - uTime * 0.21),
+          cos(uv.x * 4.4 - uTime * 0.36) + 0.6 * cos(uv.x * 2.0 + uTime * 0.18)
+        ) * 0.0009;
+        vec2 drift = clamp(current + sim, -0.0030, 0.0030);
+        vec4 layer = texture2D(uTitle, clamp(uv + drift, lo, hi));
+        float a = clamp(layer.a, 0.0, 1.0);
+        vec3 rgb = mix(layer.rgb, vec3(1.0), lit * 0.12);
+        titleLayer = vec4(rgb * a, a);
+      } else {
+        // Heat haze: a slow ambient shimmer that owes nothing to the ripples,
+        // so the air over the letters never quite settles.
+        vec2 haze = vec2(
+          sin(uv.x * 21.0 + uTime * 1.15) * 0.55 + sin(uv.x * 8.0 - uTime * 0.55) * 0.45,
+          cos(uv.y * 17.0 - uTime * 0.95) * 0.50 + sin(uv.y * 6.0 + uTime * 0.50) * 0.50
+        ) * 0.003;
+        vec4 tSub = texture2D(uTitle, clamp(uv + haze, lo, hi));
+        vec3 textCol = clamp(vec3(
+          texture2D(uTitle, clamp(uv + bend * 0.90 + haze * 1.15, lo, hi)).r,
+          tSub.g,
+          texture2D(uTitle, clamp(uv + bend * 0.60 + haze * 0.85, lo, hi)).b
+        ), 0.0, 1.0);
+        textCol = mix(textCol, vec3(1.0), lit * 0.20);
+        float textA = clamp(tSub.a, 0.0, 1.0);
+        titleLayer = vec4(textCol * textA, textA);
+      }
     }
   }
 
@@ -162,6 +188,12 @@ type Field = { w: number; h: number; cur: Float32Array; prev: Float32Array }
 
 export type WaterSceneHandle = {
   dispose: () => void
+  /* 'fallback' when WebGL was unavailable: nothing but the 2D drawing. */
+  kind: 'webgl' | 'fallback'
+  /* Uploads the current layer (or title) and paints one frame. */
+  draw: () => void
+  /* One deliberate drop, in pool units (0..1). */
+  pulse: (u?: number, v?: number, amp?: number) => void
   /* Re-bakes the title texture from the current DOM, then draws. Used when the
      headline itself changes without a resize. */
   repaint?: () => void
@@ -209,6 +241,10 @@ type WaterOptions = {
   bakeTitle?: HTMLElement | null
   /** Draw only the refracted type: a layer that can sit above the bead. */
   titleOnly?: boolean
+  /** Element that defines the pool's size and receives the ripples. */
+  container?: HTMLElement | null
+  /** Offscreen canvas whose pixels become the layer seen under the water. */
+  source?: HTMLCanvasElement | null
 }
 
 type HtmlCanvasExtras = HTMLCanvasElement & { requestPaint?: () => void; onpaint?: unknown }
@@ -226,7 +262,13 @@ type WebGLBakeExtras = WebGL2RenderingContext & {
 
 export function createWaterScene(
   canvas: HTMLCanvasElement,
-  { reducedMotion = false, bakeTitle = null, titleOnly = false }: WaterOptions = {},
+  {
+    reducedMotion = false,
+    bakeTitle = null,
+    titleOnly = false,
+    container: containerOverride = null,
+    source = null,
+  }: WaterOptions = {},
 ): WaterSceneHandle {
   const gl = canvas.getContext('webgl2', {
     alpha: true,
@@ -241,7 +283,7 @@ export function createWaterScene(
   }) as WebGL2RenderingContext | null
   if (!gl) return createFallbackWaterScene(canvas, reducedMotion)
 
-  const container = (canvas.closest('section') ?? canvas.parentElement ?? canvas) as HTMLElement
+  const container = (containerOverride ?? canvas.closest('section') ?? canvas.parentElement ?? canvas) as HTMLElement
 
   const compile = (type: number, source: string) => {
     const shader = gl.createShader(type)
@@ -295,9 +337,12 @@ export function createWaterScene(
   const uTitle = at('uTitle')
   const uTitleRect = at('uTitleRect')
   const uTitleOn = at('uTitleOn')
+  const uTitlePhoto = at('uTitlePhoto')
   gl.uniform1i(uTitle, 1)
   gl.uniform1f(uTitleOn, 0)
   gl.uniform1f(at('uTitleOnly'), titleOnly ? 1 : 0)
+  // Photographic layers take the plain refraction path (no channel split).
+  gl.uniform1f(uTitlePhoto, source ? 1 : 0)
   const titleTexture = gl.createTexture()
   gl.activeTexture(gl.TEXTURE1)
   gl.bindTexture(gl.TEXTURE_2D, titleTexture)
@@ -307,6 +352,12 @@ export function createWaterScene(
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 0]))
   gl.activeTexture(gl.TEXTURE0)
+
+  // An externally painted layer (the underwater cards) covers the whole pool.
+  if (source) {
+    gl.uniform4f(uTitleRect, 0, 0, 1, 1)
+    gl.uniform1f(uTitleOn, 1)
+  }
 
   let field = createField(2, 2)
   let bytes = new Uint8Array(4)
@@ -340,8 +391,17 @@ export function createWaterScene(
     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, field.w, field.h, gl.LUMINANCE, gl.UNSIGNED_BYTE, bytes)
   }
 
+  const uploadSource = () => {
+    if (!source) return
+    gl.activeTexture(gl.TEXTURE1)
+    gl.bindTexture(gl.TEXTURE_2D, titleTexture)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source)
+    gl.activeTexture(gl.TEXTURE0)
+  }
+
   const draw = () => {
     if (fallback) return
+    uploadSource()
     gl.viewport(0, 0, canvas.width, canvas.height)
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
@@ -667,6 +727,13 @@ export function createWaterScene(
     if (reducedMotion) draw()
   }
 
+  /** A single drop on demand — a plate becoming active ripples from its centre. */
+  const pulse = (u = 0.5, v = 0.5, amp = 0.5) => {
+    if (fallback) return
+    inject(field, u, v, field.w * 0.035, amp)
+    if (reducedMotion) draw()
+  }
+
   const onPointerMove = (event: PointerEvent) => ripple(event, 0.16)
   const onPointerDown = (event: PointerEvent) => ripple(event, 0.5)
   const onTouchMove = (event: TouchEvent) => {
@@ -704,7 +771,7 @@ export function createWaterScene(
   observer.observe(container)
   resize()
 
-  if (bakeTitle) setupBake(bakeTitle)
+  if (bakeTitle && !source) setupBake(bakeTitle)
 
   if (reducedMotion) draw()
   else start()
@@ -733,6 +800,9 @@ export function createWaterScene(
   canvas.addEventListener('webglcontextlost', onContextLost)
 
   return {
+    kind: 'webgl',
+    draw,
+    pulse,
     repaint() {
       rasterRepaint?.()
       ;(canvas as HtmlCanvasExtras).requestPaint?.()
@@ -767,7 +837,7 @@ function createFallbackWaterScene(source: HTMLCanvasElement, reducedMotion: bool
   source.style.visibility = 'hidden'
   source.parentNode?.insertBefore(canvas, source.nextSibling)
   const ctx = canvas.getContext('2d')
-  if (!ctx) return { dispose: () => { canvas.remove(); source.style.visibility = '' } }
+  if (!ctx) return { kind: 'fallback', draw: () => {}, pulse: () => {}, dispose: () => { canvas.remove(); source.style.visibility = '' } }
 
   const container = (source.closest('section') ?? source.parentElement ?? source) as HTMLElement
   let width = 0
@@ -864,7 +934,7 @@ function createFallbackWaterScene(source: HTMLCanvasElement, reducedMotion: bool
   resize()
   start()
 
-  return { dispose() {
+  return { kind: 'fallback', draw: render, pulse: () => {}, dispose() {
     disposed = true
     stop()
     observer.disconnect()
