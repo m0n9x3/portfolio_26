@@ -505,6 +505,11 @@
   will-change: transform;
 }
 
+/* Only a fine pointer gets a lens. On a phone the effect never starts, and a
+   fixed element parked outside the viewport would widen the page. */
+.glass-cursor { display: none; }
+html[data-glass-cursor='on'] .glass-cursor { display: block; }
+
 /* A perfect circle, whatever the project-wide squircle does to corners. */
 .glass-cursor .glass-lens,
 .glass-cursor .glass-magnify,

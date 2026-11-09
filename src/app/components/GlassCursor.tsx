@@ -31,6 +31,19 @@ export function GlassCursor() {
     let last = performance.now()
     let raf = 0
 
+    /* A resize (or a rotation) can leave the lens outside the new viewport:
+       it is fixed, so it never gets re-laid-out, and an off-screen fixed box
+       widens the page. Pull it back to the middle and let the next pointermove
+       take over from there. */
+    const recenter = () => {
+      if (x > window.innerWidth || y > window.innerHeight || x < 0 || y < 0) {
+        pointerX = x = window.innerWidth / 2
+        pointerY = y = window.innerHeight / 2
+        hostEl.style.transform = `translate3d(${x}px, ${y}px, 0)`
+        flag('visible', false)
+      }
+    }
+
     const flag = (key: 'visible' | 'hover' | 'press', on: boolean) => {
       const value = String(on)
       if (hostEl.dataset[key] !== value) hostEl.dataset[key] = value
@@ -70,6 +83,7 @@ export function GlassCursor() {
       raf = requestAnimationFrame(tick)
     }
 
+    window.addEventListener('resize', recenter)
     window.addEventListener('pointermove', onMove, { passive: true })
     window.addEventListener('pointerdown', onDown, { passive: true })
     window.addEventListener('pointerup', onUp, { passive: true })
@@ -81,6 +95,7 @@ export function GlassCursor() {
 
     return () => {
       cancelAnimationFrame(raf)
+      window.removeEventListener('resize', recenter)
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerdown', onDown)
       window.removeEventListener('pointerup', onUp)
