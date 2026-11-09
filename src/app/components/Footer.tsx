@@ -64,8 +64,8 @@ function spot(vw: number, width: number, opts: { band?: [number, number]; edge?:
 function makeDrift(vw: number, width: number, opts?: { band?: [number, number]; edge?: boolean }): Drift {
   return {
     ...spot(vw, width, opts),
-    /* 등장 애니메이션(팩 + 주소)이 끝나는 1.9초 직후부터 — 바로 보이게. */
-    delay: pick(1900, 3000),
+    /* 첫 문장만 1.4초로 고정하고(아래), 나머지는 그 뒤로 흩어진다. */
+    delay: pick(1500, 2500),
     duration: pick(12000, 20000),
     size: Math.round(pick(12, 14)),
     peak: pick(0.28, 0.5),
@@ -129,7 +129,7 @@ function Dog({ vw }: { vw: number }) {
   const base = useMemo(
     () => ({
       ...makeDrift(vw, size, { band: [22, 48], edge: true }),
-      delay: pick(2000, 2800),
+      delay: pick(1500, 2200),
       duration: pick(15000, 21000),
       rise: pick(120, 180),
       peak: 0.95,
@@ -168,8 +168,10 @@ function Dog({ vw }: { vw: number }) {
 function Float({ vw }: { vw: number }) {
   const texts = useMemo(
     () =>
-      CHATTER.map((text) => {
+      CHATTER.map((text, i) => {
         const d = makeDrift(vw, text.length * 13 * 1.02 + 14)
+        /* 첫 장면은 정확히 1.4초에 출발한다. */
+        if (i === 0) d.delay = 1400
         return { text, d }
       }),
     [vw],
@@ -177,7 +179,7 @@ function Float({ vw }: { vw: number }) {
 
   const near = useMemo(
     /* 사진이 뜬 뒤라 조금만 늦게. */
-    () => ({ ...makeDrift(vw, NEAR_DOG.length * 12 * 1.02 + 14), size: 12, delay: pick(3200, 4600) }),
+    () => ({ ...makeDrift(vw, NEAR_DOG.length * 12 * 1.02 + 14), size: 12, delay: pick(2600, 3800) }),
     [vw],
   )
 
