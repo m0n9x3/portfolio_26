@@ -1,0 +1,84 @@
+/* 마지막 화면 — 뒤로 한 줄 마퀴, 앞으로 수액팩이 기운 채 솟아오르고
+   아래에 주소·워드마크가 따라붙는다. 클래스는 fin- 접두사.
+   다른 섹션과 같은 이징(cubic-bezier(0.22, 1, 0.36, 1))과, 탄력 대신
+   한 번만 살짝 지나쳤다 앉는 정착을 쓴다. */
+
+/* 마퀴 — 화면에 들어오기 전에는 멈춰 있다가, 장면이 켜질 때 출발한다. */
+.fin-marquee {
+  animation-play-state: paused;
+}
+
+.fin[data-live='true'] .fin-marquee {
+  animation-play-state: running;
+}
+
+/* 양 끝은 잘리지 않고 사라진다 — 물과 안개가 섞이는 페이지의 결. */
+.fin-marquee-mask {
+  mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent);
+}
+
+/* 수액팩 — 아래에서 천천히 밀려 올라오고, 끝에서 한 번만 살짝 지나쳤다
+   앉는다. 처음엔 흐릿하다 초점이 잡히며 나타난다. */
+.fin-bag {
+  opacity: 0;
+}
+
+.fin[data-live='true'] .fin-bag {
+  animation: fin-rise 1500ms cubic-bezier(0.22, 1, 0.36, 1) 220ms forwards;
+}
+
+@keyframes fin-rise {
+  0% {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translate3d(0, 18%, 0) rotate(16deg) scale(0.97);
+  }
+  28% {
+    opacity: 1;
+  }
+  62% {
+    filter: blur(0);
+    transform: translate3d(0, -1.2%, 0) rotate(16deg) scale(1.004);
+  }
+  82% {
+    transform: translate3d(0, 0.4%, 0) rotate(16deg) scale(0.999);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, 0, 0) rotate(16deg);
+  }
+}
+
+/* 주소 + 워드마크 — 팩이 거의 앉을 때쯤, 같은 이징으로 따라온다. */
+.fin-meta {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 800ms cubic-bezier(0.22, 1, 0.36, 1) 1100ms,
+    transform 800ms cubic-bezier(0.22, 1, 0.36, 1) 1100ms;
+}
+
+.fin[data-live='true'] .fin-meta {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fin-marquee {
+    animation: none;
+  }
+
+  .fin-meta {
+    animation: none;
+    transition: none;
+    transform: none;
+    opacity: 1;
+  }
+
+  .fin-bag {
+    animation: none;
+    opacity: 1;
+    filter: none;
+    transform: rotate(16deg);
+  }
+}

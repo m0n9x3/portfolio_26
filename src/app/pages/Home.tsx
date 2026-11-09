@@ -1,17 +1,15 @@
-import { animate } from 'animejs'
 import { ArrowUpRight } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 
-import { site, testimonials } from '../../data/site'
+import { site } from '../../data/site'
 import { FigmaSelect } from '../components/FigmaSelect'
 import { Florilegium } from '../components/Florilegium'
 import { Hero } from '../components/Hero'
-import { Lines, Magnetic, Parallax, Reveal } from '../components/motion'
+import { Lines, Parallax, Reveal } from '../components/motion'
 import { Statement } from '../components/Statement'
 import { ToolPop } from '../components/ToolPop'
 import { cx } from '../lib/cx'
-import { prefersReduced } from '../lib/reduced'
 
 /* 프로필 키워드 팝오버 내용 — 호버 시 각 키워드 아래에 펼쳐지는
    설명 목록(불릿 텍스트). */
@@ -172,12 +170,6 @@ export function Home() {
           <Services />
         </div>
       </section>
-
-      {/* Testimonials */}
-      <section className="mx-auto max-w-[1400px] px-5 pt-32 sm:px-8 sm:pt-44">
-        <Testimonials />
-      </section>
-
     </>
   )
 }
@@ -287,78 +279,6 @@ function Services() {
               className={cx('absolute inset-0 size-full object-cover transition-opacity duration-300', active === i ? 'opacity-100' : 'opacity-0')}
             />
           ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function Testimonials() {
-  const [index, setIndex] = useState(0)
-  const [shown, setShown] = useState(0)
-  const quote = useRef<HTMLDivElement>(null)
-  const swapping = useRef(false)
-  const t = testimonials[shown]
-
-  /* Crossfade in two steps: the old quote leaves, the new one is committed,
-     then it arrives. State drives the copy, anime.js drives the film. */
-  const select = (next: number) => {
-    if (next === shown || swapping.current) return
-    setIndex(next)
-    const el = quote.current
-    if (!el || prefersReduced()) {
-      setShown(next)
-      return
-    }
-    swapping.current = true
-    animate(el, {
-      opacity: [1, 0],
-      translateY: [0, -8],
-      duration: 220,
-      ease: 'inQuad',
-      onComplete: () => {
-        setShown(next)
-        window.setTimeout(() => {
-          animate(el, {
-            opacity: [0, 1],
-            translateY: [12, 0],
-            duration: 420,
-            ease: 'outQuart',
-            onComplete: () => {
-              swapping.current = false
-            },
-          })
-        }, 40)
-      },
-    })
-  }
-
-  return (
-    <div data-glass-dark className="rounded-[32px] bg-fg px-6 py-14 text-bg sm:px-14 sm:py-20">
-      <div className="mx-auto max-w-3xl">
-        <div ref={quote}>
-          <blockquote>
-            <p className="font-display text-balance text-[30px] leading-[1.1] sm:text-[44px]">“{t.quote}”</p>
-            <footer className="mt-8 text-[16px] text-bg/60">
-              <span className="text-bg">{t.name}</span>, {t.role}
-            </footer>
-          </blockquote>
-        </div>
-        <div className="mt-10 flex items-center gap-2">
-          {testimonials.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              aria-label={`Testimonial ${i + 1}`}
-              onClick={() => select(i)}
-              className={cx('h-1.5 rounded-[3px] transition-all duration-500', i === index ? 'w-10 bg-bg' : 'w-4 bg-bg/30 hover:bg-bg/50')}
-            />
-          ))}
-          <Magnetic className="ml-auto">
-            <button type="button" onClick={() => select((shown + 1) % testimonials.length)} className="grid size-12 place-items-center rounded-[14px] border border-bg/20 transition-colors hover:bg-bg hover:text-fg" aria-label="Next">
-              <ArrowUpRight className="size-4 rotate-45" />
-            </button>
-          </Magnetic>
         </div>
       </div>
     </div>
