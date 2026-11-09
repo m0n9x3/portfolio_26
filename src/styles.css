@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/noto-serif-kr';
+@import '@fontsource/lobster';
 
 /* Pretendard, self-hosted so the site has no CDN dependency at render time.
    Variable, 45 to 920. Everything sets in it. */
@@ -19,6 +20,9 @@
      Noto Serif KR carries the Korean myeongjo look; it has no true italic, so
      the type stands upright instead of getting a synthetic slant. */
   --font-serif-display: 'Noto Serif KR Variable', ui-serif, Georgia, 'Times New Roman', serif;
+  /* 랍스터: Work 섹션 인트로와 What I do 제목의 손글씨. 폭이 넓어 같은
+     크기면 화면을 넘기므로 쓰는 곳에서 크기를 따로 정한다. */
+  --font-script: 'Lobster', ui-serif, Georgia, 'Times New Roman', serif;
 
   /* The same cool water the hero sits in: pale aqua grounds, ink that matches
      the type over the pool, and a teal accent in place of a foreign blue. */

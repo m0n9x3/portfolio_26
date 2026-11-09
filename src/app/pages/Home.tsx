@@ -164,7 +164,7 @@ export function Home() {
       <section className="mx-auto max-w-[1400px] px-5 pt-32 sm:px-8 sm:pt-44">
         <div className="grid gap-10 lg:grid-cols-[1fr_2fr] lg:gap-20">
           <div>
-            <Lines as="h2" className="font-display text-[40px] sm:text-[56px]" lines={['그리고..']} />
+            <Lines as="h2" className="font-script text-[36px] leading-[1.2] sm:text-[52px]" lines={['& ...Work!']} />
             <Reveal delay={0.1} className="mt-4 max-w-xs text-[16px] text-muted">
               이런 것들을 더 해왔어요.
             </Reveal>
