@@ -1,0 +1,21 @@
+name: Typecheck
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # lockfile 그대로 설치 — CI 에서 의존성이 조용히 올라가지 않게.
+      - run: bun install --frozen-lockfile
+
+      - run: bun run typecheck
