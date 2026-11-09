@@ -52,6 +52,21 @@
   height: 100%;
 }
 
+/* 섹션 끝의 이음매 — 물이 아래로 갈수록 페이지 바탕에 잠겨 다음 섹션과
+   선 없이 이어진다. 날짜(.fl-chrome, z-4)보다 아래에 깔아, 경계를 넘는
+   순간에도 날짜는 끝까지 또렷하게 남는다. 불투명도는 프레임 루프가 구간
+   끝에서만 올린다. */
+.fl-exit {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 3;
+  height: min(20vh, 190px);
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(to bottom, transparent 0%, var(--color-bg) 92%);
+}
+
 /* ------------------------------------------------------------- chrome */
 .fl-chrome { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
 

@@ -1,5 +1,5 @@
 /* 마지막 화면 — 뒤로 한 줄 마퀴, 앞으로 수액팩이 기운 채 솟아오르고
-   아래에 주소·워드마크가 따라붙는다. 클래스는 fin- 접두사.
+   아래에 문장과 주소가 따라붙는다. 클래스는 fin- 접두사.
    다른 섹션과 같은 이징(cubic-bezier(0.22, 1, 0.36, 1))과, 탄력 대신
    한 번만 살짝 지나쳤다 앉는 정착을 쓴다. */
 
@@ -15,6 +15,13 @@
 /* 양 끝은 잘리지 않고 사라진다 — 물과 안개가 섞이는 페이지의 결. */
 .fin-marquee-mask {
   mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent);
+}
+
+/* 팩이 바닥에서 조금 떠 보이도록 은은한 그림자만 깐다. 팩 실루엣을 따르는
+   drop-shadow 라 회전한 모서리에도 상자가 생기지 않는다. 두 겹으로 나눠
+   가까운 접촉부와 먼 확산을 따로 그린다. */
+.fin-bag-cast {
+  filter: drop-shadow(0 12px 18px rgba(31, 60, 72, 0.1)) drop-shadow(0 32px 46px rgba(31, 60, 72, 0.12));
 }
 
 /* 수액팩 — 아래에서 천천히 밀려 올라오고, 끝에서 한 번만 살짝 지나쳤다
@@ -50,7 +57,56 @@
   }
 }
 
-/* 주소 + 워드마크 — 팩이 거의 앉을 때쯤, 같은 이징으로 따라온다. */
+/* 잡담 — 등장이 끝난 뒤 하나씩 떠오른다. 위로 오르는 동안에만 보이고,
+   아이템마다 위치·속도·세기가 다르다(값은 컴포넌트가 준다). */
+.fin-drift {
+  position: absolute;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: fin-drift 15s linear infinite both;
+  animation-play-state: paused;
+}
+
+.fin[data-live='true'] .fin-drift {
+  animation-play-state: running;
+}
+
+@keyframes fin-drift {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 26px, 0) rotate(var(--rot, 0deg));
+  }
+  6%,
+  76% {
+    opacity: var(--peak, 0.42);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, calc(var(--rise, 120px) * -1), 0) rotate(var(--rot, 0deg));
+  }
+}
+
+/* 좌우 흔들림은 위로 오르는 축과 따로 둔다 — 둘이 겹쳐야 둥실거린다. */
+.fin-sway {
+  display: inline-block;
+  animation: fin-sway 3.6s ease-in-out infinite alternate;
+  animation-play-state: paused;
+}
+
+.fin[data-live='true'] .fin-sway {
+  animation-play-state: running;
+}
+
+@keyframes fin-sway {
+  from {
+    transform: translateX(-5px);
+  }
+  to {
+    transform: translateX(5px);
+  }
+}
+
+/* 문장 + 주소 — 팩이 거의 앉을 때쯤, 같은 이징으로 따라온다. */
 .fin-meta {
   opacity: 0;
   transform: translateY(14px);
@@ -66,6 +122,10 @@
 @media (prefers-reduced-motion: reduce) {
   .fin-marquee {
     animation: none;
+  }
+
+  .fin-drift {
+    display: none;
   }
 
   .fin-meta {

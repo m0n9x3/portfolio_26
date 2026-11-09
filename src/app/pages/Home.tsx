@@ -1,6 +1,5 @@
 import { ArrowUpRight } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router'
 
 import { site } from '../../data/site'
 import { FigmaSelect } from '../components/FigmaSelect'
@@ -146,10 +145,10 @@ export function Home() {
               </div>
             </Reveal>
             <Reveal delay={0.3} className="mt-8">
-              <Link to="/about" className="link-draw inline-flex items-center gap-1.5 text-[16px] font-medium">
+              <span className="inline-flex items-center gap-1.5 text-[16px] font-medium">
                 More about me
                 <ArrowUpRight className="size-4" />
-              </Link>
+              </span>
             </Reveal>
           </div>
         </div>
@@ -232,8 +231,7 @@ function Services() {
       <ul className="relative z-10 border-t border-line" onPointerLeave={() => setActive(null)}>
         {CREDITS.map((row, i) => (
           <li key={row.title} className="border-b border-line">
-            <Link
-              to="/work"
+            <div
               onPointerEnter={(event) => {
                 if (event.pointerType !== 'mouse') return
                 point.current = { x: event.clientX, y: event.clientY }
@@ -253,7 +251,7 @@ function Services() {
                 ))}
                 <ArrowUpRight className="size-4 shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </span>
-            </Link>
+            </div>
           </li>
         ))}
       </ul>

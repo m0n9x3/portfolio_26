@@ -6,12 +6,16 @@ export function ToolPop({ word, items }: { word: string; items: string[] }) {
   return (
     <span className="tool-pop" tabIndex={0}>
       {word}
+      {/* 문장(<p>) 안에 들어가므로 목록 태그를 쓰지 않는다 — ul/li 는
+          문단의 자식이 될 수 없다. 모양은 같은 클래스로 유지한다. */}
       <span className="tool-popover" aria-hidden>
-        <ul>
+        <span className="tool-popover__list">
           {items.map((item) => (
-            <li key={item}>{item}</li>
+            <span key={item} className="tool-popover__item">
+              {item}
+            </span>
           ))}
-        </ul>
+        </span>
       </span>
     </span>
   )

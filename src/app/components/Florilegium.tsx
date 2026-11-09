@@ -220,6 +220,7 @@ export function Florilegium() {
   const captionRef = useRef<HTMLDivElement>(null)
   const chromeRef = useRef<HTMLDivElement>(null)
   const stripRef = useRef<HTMLDivElement>(null)
+  const exitRef = useRef<HTMLDivElement>(null)
   const stRef = useRef<ScrollTrigger | null>(null)
   const tweenRef = useRef<gsap.core.Tween | null>(null)
   const reduced = usePrefersReducedMotion()
@@ -290,6 +291,7 @@ export function Florilegium() {
     let skew = 0
     let lastScroll = window.scrollY
     let lastActive = -1
+    let lastExit = ''
     const X = new Array<number>(N).fill(0)
     const W = new Array<number>(N).fill(0)
     const H = new Array<number>(N).fill(0)
@@ -329,6 +331,18 @@ export function Florilegium() {
           }
         }
       }
+      /* 섹션 끝의 이음매 — 트랙 끝까지 남은 거리로 직접 잰다(진행도는 레이아웃이
+         자란 뒤 갱신 전이면 어긋난다). 마지막 40vh 동안 물이 페이지 바탕으로
+         잠기고, 고정이 풀리는 지점에서 꽉 찬다. 조기 반환보다 앞에 둔다. */
+      if (exitRef.current) {
+        const left = track.getBoundingClientRect().bottom - vh
+        const exit = smooth(vh * 0.4, 0, left).toFixed(3)
+        if (exit !== lastExit) {
+          lastExit = exit
+          exitRef.current.style.opacity = exit
+        }
+      }
+
       /* 스크롤도 뷰포트도 그대로면 계산할 것도 다시 쓸 스타일도 없다
          (스냅이 안착한 뒤의 프레임이 대부분이다). */
       if (!floating && !dy && vw === layoutVw && vh === layoutVh) return
@@ -753,6 +767,9 @@ export function Florilegium() {
               </div>
             )}
           </div>
+
+          {/* 다음 섹션으로 넘어가는 자리 — 구간 끝에서만 켜진다. */}
+          <div ref={exitRef} aria-hidden="true" className="fl-exit" />
 
           <div ref={stripRef} className="fl-strip">
             {PLATES.map((p, i) => (

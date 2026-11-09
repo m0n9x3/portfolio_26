@@ -1,6 +1,5 @@
 import { animate } from 'animejs'
 import { useRef, useState } from 'react'
-import { Link } from 'react-router'
 
 import type { Project } from '../../data/site'
 import { cx } from '../lib/cx'
@@ -8,7 +7,7 @@ import { prefersReduced } from '../lib/reduced'
 import { Parallax, useInViewOnce } from './motion'
 
 export function WorkCard({ project, index = 0 }: { project: Project; index?: number }) {
-  const link = useRef<HTMLAnchorElement>(null)
+  const link = useRef<HTMLDivElement>(null)
   const label = useRef<HTMLSpanElement>(null)
   const wrapper = useRef<HTMLDivElement>(null)
   const [hover, setHover] = useState(false)
@@ -48,9 +47,8 @@ export function WorkCard({ project, index = 0 }: { project: Project; index?: num
       className={cx(project.size === 'large' ? 'md:col-span-2' : 'md:col-span-1')}
       style={prefersReduced() ? undefined : { opacity: 0, transform: 'translateY(30px)' }}
     >
-      <Link
+      <div
         ref={link}
-        to={`/work/${project.slug}`}
         className="group relative block"
         onMouseEnter={(event) => {
           setHover(true)
@@ -82,7 +80,7 @@ export function WorkCard({ project, index = 0 }: { project: Project; index?: num
             <span className="ml-3 tabular-nums text-faint">{project.year}</span>
           </p>
         </div>
-      </Link>
+      </div>
     </div>
   )
 }

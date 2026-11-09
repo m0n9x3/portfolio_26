@@ -801,19 +801,19 @@ html[data-glass-cursor='on'] .glass-cursor { display: block; }
     transform 180ms ease;
 }
 
-.tool-popover ul {
+.tool-popover__list {
   display: grid;
   gap: 6px;
 }
 
-.tool-popover li {
+.tool-popover__item {
   display: flex;
   align-items: baseline;
   gap: 0.45em;
   line-height: 1.5;
 }
 
-.tool-popover li::before {
+.tool-popover__item::before {
   content: '-';
   flex: none;
   opacity: 0.45;

@@ -13,10 +13,10 @@ export function About() {
           <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-[14px]">
             {site.socials.map((s) => (
               <li key={s.label}>
-                <a href={s.href} className="link-draw inline-flex items-center gap-1 text-muted hover:text-fg">
+                <span className="inline-flex items-center gap-1 text-muted">
                   {s.label}
                   <ArrowUpRight className="size-3.5" />
-                </a>
+                </span>
               </li>
             ))}
           </ul>

@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowUpRight } from 'lucide-react'
-import { Link, Navigate, useParams } from 'react-router'
+import { Navigate, useParams } from 'react-router'
 
 import { bySlug, projects } from '../../data/site'
 import { Lines, Parallax, Reveal } from '../components/motion'
@@ -13,10 +13,10 @@ export function Work() {
 
   return (
     <article className="mx-auto max-w-[1400px] px-5 pt-28 sm:px-8 sm:pt-36">
-      <Link to="/#work" className="inline-flex h-9 items-center gap-1.5 text-[14px] text-muted transition-colors hover:text-fg">
+      <span className="inline-flex h-9 items-center gap-1.5 text-[14px] text-muted">
         <ArrowLeft className="size-4" />
         All work
-      </Link>
+      </span>
 
       <div className="mt-8 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
         <Lines as="h1" className="font-display text-[clamp(56px,10vw,150px)]" lines={[project.title]} />
@@ -45,10 +45,10 @@ export function Work() {
             ))}
             {project.link && (
               <div className="border-t border-line pt-3">
-                <a href={project.link} className="link-draw inline-flex items-center gap-1 font-medium">
+                <span className="inline-flex items-center gap-1 font-medium">
                   Visit the site
                   <ArrowUpRight className="size-4" />
-                </a>
+                </span>
               </div>
             )}
           </dl>
@@ -75,7 +75,7 @@ export function Work() {
         </Reveal>
       </div>
 
-      <Link to={`/work/${next.slug}`} className="group mt-32 block border-t border-line pt-10">
+      <div className="group mt-32 block border-t border-line pt-10">
         <p className="text-[14px] text-muted">Next project</p>
         <div className="mt-3 flex items-end justify-between gap-6">
           <h2 className="font-display text-[clamp(44px,8vw,120px)] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-3">{next.title}</h2>
@@ -83,7 +83,7 @@ export function Work() {
             <img src={next.cover} alt="" className="size-full object-cover transition-transform duration-700 group-hover:scale-105" />
           </span>
         </div>
-      </Link>
+      </div>
     </article>
   )
 }
