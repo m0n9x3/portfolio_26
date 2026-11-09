@@ -1,7 +1,6 @@
 import { animate } from 'animejs'
 import { ArrowUpRight } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { Link } from 'react-router'
 
 import { site, testimonials } from '../../data/site'
@@ -189,20 +188,27 @@ export function Home() {
 function Services() {
   const [active, setActive] = useState<number | null>(null)
   const ghost = useRef<HTMLDivElement>(null)
+  const stage = useRef<HTMLDivElement>(null)
   const point = useRef({ x: 0, y: 0 })
 
   /* 커서를 따라오는 미리보기. 좌표를 그대로 쓰지 않고 스프링으로 한 박자
      늦게 따라가게 해서, 손을 멈출 때 살짝 지나쳤다 돌아온다. 감쇠를 임계
-     감쇠보다 약하게 두어(ζ ≈ 0.55) 도착에 탄력이 생긴다. 줄에서 줄로 옮겨
-     갈 때는 끊기지 않게, 목록에 들어오고 나갈 때만 루프를 켜고 끝는다.
-     터치에서는 뜨지 않는다 — 떠도 손끝을 가릴 뿐이다. */
+     감쇠보다 약하게 두어(ζ ≈ 0.55) 도착에 탄력이 생긴다. 좌표는 화면이
+     아니라 목록 박스 기준으로 환산한다 — 목록과 같은 스태킹 컨텍스트에
+     있어야 글자 뒤로 깔리기 때문. 줄에서 줄로 옮겨 갈 때는 끊기지 않게,
+     목록에 들어오고 나갈 때만 루프를 켜고 끝는다. */
   const hovering = active !== null
   useEffect(() => {
     if (!hovering) return
     const el = ghost.current
-    if (!el) return
-    let x = point.current.x
-    let y = point.current.y
+    const box = stage.current
+    if (!el || !box) return
+    let rect = box.getBoundingClientRect()
+    const refresh = () => {
+      rect = box.getBoundingClientRect()
+    }
+    let x = point.current.x - rect.left
+    let y = point.current.y - rect.top
     let vx = 0
     let vy = 0
     let last = performance.now()
@@ -216,20 +222,26 @@ function Services() {
     function tick(now: number) {
       const dt = Math.min(now - last, 40) / 1000
       last = now
-      vx += (140 * (point.current.x - x) - 13 * vx) * dt
-      vy += (140 * (point.current.y - y) - 13 * vy) * dt
+      vx += (140 * (point.current.x - rect.left - x) - 13 * vx) * dt
+      vy += (140 * (point.current.y - rect.top - y) - 13 * vy) * dt
       x += vx * dt
       y += vy * dt
       write()
       raf = requestAnimationFrame(tick)
     }
 
-    return () => cancelAnimationFrame(raf)
+    document.addEventListener('scroll', refresh, true)
+    window.addEventListener('resize', refresh)
+    return () => {
+      cancelAnimationFrame(raf)
+      document.removeEventListener('scroll', refresh, true)
+      window.removeEventListener('resize', refresh)
+    }
   }, [hovering])
 
   return (
-    <>
-      <ul className="border-t border-line" onPointerLeave={() => setActive(null)}>
+    <div ref={stage} className="relative">
+      <ul className="relative z-10 border-t border-line" onPointerLeave={() => setActive(null)}>
         {CREDITS.map((row, i) => (
           <li key={row.title} className="border-b border-line">
             <Link
@@ -258,34 +270,30 @@ function Services() {
         ))}
       </ul>
 
-      {/* 미리보기 — 고정 위치에 떠 있고 좌표만 따라온다. 네 장을 모두 올려
-          두고 투명도만 바꿔, 줄을 옮길 때 이미지가 다시 로드되지 않는다.
-          body 로 포털해 두는 이유: 조상 중 transform/filter 가 있으면
-          position:fixed 가 그 조상 기준이 되어 페이지와 함께 미끄러진다. */}
-      {createPortal(
-        <div
-          ref={ghost}
+      {/* 미리보기 — 목록과 같은 스태킹 컨텍스트(z-0)에서 글자(z-10) 뒤에
+          깔린다. 네 장을 모두 올려 두고 투명도만 바꿔, 줄을 옮길 때 이미지가
+          다시 로드되지 않는다. */}
+      <div
+        ref={ghost}
         aria-hidden
-          className={cx(
-            'pointer-events-none fixed left-0 top-0 -z-10 hidden w-[260px] overflow-hidden rounded-[16px] border border-line bg-surface-2 shadow-[0_24px_50px_-30px_rgb(7_25_27/0.55)] transition-[opacity,scale] duration-300 ease-out will-change-transform md:block',
-            active === null ? 'scale-75 opacity-0' : 'scale-100 opacity-100',
-          )}
-        >
-          <div className="relative aspect-[4/3]">
-            {CREDITS.map((row, i) => (
-              <img
-                key={row.title}
-                src={row.image}
-                alt=""
-                draggable={false}
-                className={cx('absolute inset-0 size-full object-cover transition-opacity duration-300', active === i ? 'opacity-100' : 'opacity-0')}
-              />
-            ))}
-          </div>
-        </div>,
-        document.body,
-      )}
-    </>
+        className={cx(
+          'pointer-events-none absolute left-0 top-0 z-0 hidden w-[260px] overflow-hidden rounded-[16px] border border-line bg-surface-2 shadow-[0_24px_50px_-30px_rgb(7_25_27/0.55)] transition-[opacity,scale] duration-300 ease-out will-change-transform md:block',
+          active === null ? 'scale-75 opacity-0' : 'scale-100 opacity-100',
+        )}
+      >
+        <div className="relative aspect-[4/3]">
+          {CREDITS.map((row, i) => (
+            <img
+              key={row.title}
+              src={row.image}
+              alt=""
+              draggable={false}
+              className={cx('absolute inset-0 size-full object-cover transition-opacity duration-300', active === i ? 'opacity-100' : 'opacity-0')}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
   )
 }
 
