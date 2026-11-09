@@ -1,6 +1,7 @@
 import { animate } from 'animejs'
 import { ArrowUpRight } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router'
 
 import { site, testimonials } from '../../data/site'
@@ -41,10 +42,10 @@ const PROFILE_TOOLS = {
    판이나 아이콘 없이 텍스트만 두고, 회사 이름만 링크로 읽히게 한다.
    실제 회사·주소로 바꿀 때는 이 배열만 고치면 된다. */
 const CREDITS = [
-  { title: 'Brand identity', places: ['BDSCAST'] },
-  { title: 'Product design', places: ['MECROSS'] },
-  { title: 'Websites', places: ['BDSCAST'] },
-  { title: 'Creative development', places: ['MECROSS'] },
+  { title: 'Brand identity', places: ['BDSCAST'], image: '/images/aurora.jpg' },
+  { title: 'Product design', places: ['MECROSS'], image: '/images/meridian.jpg' },
+  { title: 'Websites', places: ['BDSCAST'], image: '/images/halcyon.jpg' },
+  { title: 'Creative development', places: ['MECROSS'], image: '/images/fold.jpg' },
 ]
 
 export function Home() {
@@ -164,7 +165,7 @@ export function Home() {
       <section className="mx-auto max-w-[1400px] px-5 pt-32 sm:px-8 sm:pt-44">
         <div className="grid gap-10 lg:grid-cols-[1fr_2fr] lg:gap-20">
           <div>
-            <Lines as="h2" className="font-display text-[40px] sm:text-[56px]" lines={['What I do', '그리고..']} />
+            <Lines as="h2" className="font-display text-[40px] sm:text-[56px]" lines={['그리고..']} />
             <Reveal delay={0.1} className="mt-4 max-w-xs text-[16px] text-muted">
               이런 것들을 더 해왔어요.
             </Reveal>
@@ -186,31 +187,89 @@ export function Home() {
    오른쪽 회사 이름은 호버에서만 밑줄이 그어진다. 좁은 화면에서는 회사
    이름이 제목 아래로 내려간다(같은 마크업, 그리드 열만 바뀐다). */
 function Services() {
+  const [active, setActive] = useState<number | null>(null)
+  const ghost = useRef<HTMLDivElement>(null)
+  const point = useRef({ x: 0, y: 0 })
+
+  /* 커서를 따라오는 미리보기. 줄에 올라간 동안에만 창에 좌표 리스너를 걸고,
+     위치는 리스너 안에서 바로 쓴다(rAF 없이도 포인터 이벤트만큼만 움직임).
+     터치에서는 뜨지 않는다 — 떠도 손끝을 가릴 뿐이다. */
+  useEffect(() => {
+    if (active === null) return
+    const el = ghost.current
+    if (!el) return
+    const place = (x: number, y: number) => {
+      el.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`
+    }
+    place(point.current.x, point.current.y)
+    const onMove = (event: PointerEvent) => {
+      point.current = { x: event.clientX, y: event.clientY }
+      place(event.clientX, event.clientY)
+    }
+    window.addEventListener('pointermove', onMove, { passive: true })
+    return () => window.removeEventListener('pointermove', onMove)
+  }, [active])
+
   return (
-    <ul className="border-t border-line">
-      {CREDITS.map((row, i) => (
-        <li key={row.title} className="border-b border-line">
-          <Link
-            to="/work"
-            className="group grid grid-cols-[1.75rem_minmax(0,1fr)] items-baseline gap-x-4 gap-y-1.5 py-6 sm:grid-cols-[2.5rem_minmax(0,1fr)_auto] sm:gap-x-6 sm:py-7"
-          >
-            <span className="text-[13px] tabular-nums text-faint sm:text-[14px]">0{i + 1}</span>
-            <span className="font-display text-[26px] leading-[1.1] text-fg/60 transition-colors duration-300 group-hover:text-fg sm:text-[42px]">
-              {row.title}
-            </span>
-            <span className="col-start-2 flex items-baseline gap-2 text-[14px] text-muted transition-colors duration-300 group-hover:text-fg sm:col-start-3 sm:text-[16px]">
-              {row.places.map((place, j) => (
-                <span key={place} className="flex items-baseline gap-2">
-                  {j > 0 && <span className="text-faint">/</span>}
-                  <span className="link-draw">in {place}</span>
-                </span>
-              ))}
-              <ArrowUpRight className="size-4 shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-            </span>
-          </Link>
-        </li>
-      ))}
-    </ul>
+    <>
+      <ul className="border-t border-line" onPointerLeave={() => setActive(null)}>
+        {CREDITS.map((row, i) => (
+          <li key={row.title} className="border-b border-line">
+            <Link
+              to="/work"
+              onPointerEnter={(event) => {
+                if (event.pointerType !== 'mouse') return
+                point.current = { x: event.clientX, y: event.clientY }
+                setActive(i)
+              }}
+              className="group grid grid-cols-[1.75rem_minmax(0,1fr)] items-baseline gap-x-4 gap-y-1.5 py-6 sm:grid-cols-[2.5rem_minmax(0,1fr)_auto] sm:gap-x-6 sm:py-7"
+            >
+              <span className="text-[13px] tabular-nums text-faint sm:text-[14px]">0{i + 1}</span>
+              <span className="font-display text-[26px] leading-[1.1] text-fg/60 transition-colors duration-300 group-hover:text-fg sm:text-[42px]">
+                {row.title}
+              </span>
+              <span className="col-start-2 flex items-baseline gap-2 text-[14px] text-muted transition-colors duration-300 group-hover:text-fg sm:col-start-3 sm:text-[16px]">
+                {row.places.map((place, j) => (
+                  <span key={place} className="flex items-baseline gap-2">
+                    {j > 0 && <span className="text-faint">/</span>}
+                    <span className="link-draw">in {place}</span>
+                  </span>
+                ))}
+                <ArrowUpRight className="size-4 shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+
+      {/* 미리보기 — 고정 위치에 떠 있고 좌표만 따라온다. 네 장을 모두 올려
+          두고 투명도만 바꿔, 줄을 옮길 때 이미지가 다시 로드되지 않는다.
+          body 로 포털해 두는 이유: 조상 중 transform/filter 가 있으면
+          position:fixed 가 그 조상 기준이 되어 페이지와 함께 미끄러진다. */}
+      {createPortal(
+        <div
+          ref={ghost}
+        aria-hidden
+          className={cx(
+            'pointer-events-none fixed left-0 top-0 z-[60] hidden w-[260px] overflow-hidden rounded-[16px] border border-line bg-surface-2 shadow-[0_24px_50px_-30px_rgb(7_25_27/0.55)] transition-[opacity,scale] duration-300 ease-out will-change-transform md:block',
+            active === null ? 'scale-75 opacity-0' : 'scale-100 opacity-100',
+          )}
+        >
+          <div className="relative aspect-[4/3]">
+            {CREDITS.map((row, i) => (
+              <img
+                key={row.title}
+                src={row.image}
+                alt=""
+                draggable={false}
+                className={cx('absolute inset-0 size-full object-cover transition-opacity duration-300', active === i ? 'opacity-100' : 'opacity-0')}
+              />
+            ))}
+          </div>
+        </div>,
+        document.body,
+      )}
+    </>
   )
 }
 
