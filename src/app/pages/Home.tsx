@@ -191,24 +191,41 @@ function Services() {
   const ghost = useRef<HTMLDivElement>(null)
   const point = useRef({ x: 0, y: 0 })
 
-  /* 커서를 따라오는 미리보기. 줄에 올라간 동안에만 창에 좌표 리스너를 걸고,
-     위치는 리스너 안에서 바로 쓴다(rAF 없이도 포인터 이벤트만큼만 움직임).
+  /* 커서를 따라오는 미리보기. 좌표를 그대로 쓰지 않고 스프링으로 한 박자
+     늦게 따라가게 해서, 손을 멈출 때 살짝 지나쳤다 돌아온다. 감쇠를 임계
+     감쇠보다 약하게 두어(ζ ≈ 0.55) 도착에 탄력이 생긴다. 줄에서 줄로 옮겨
+     갈 때는 끊기지 않게, 목록에 들어오고 나갈 때만 루프를 켜고 끝는다.
      터치에서는 뜨지 않는다 — 떠도 손끝을 가릴 뿐이다. */
+  const hovering = active !== null
   useEffect(() => {
-    if (active === null) return
+    if (!hovering) return
     const el = ghost.current
     if (!el) return
-    const place = (x: number, y: number) => {
-      el.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`
+    let x = point.current.x
+    let y = point.current.y
+    let vx = 0
+    let vy = 0
+    let last = performance.now()
+    let raf = requestAnimationFrame(tick)
+
+    const write = () => {
+      el.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) translate(-50%, -50%)`
     }
-    place(point.current.x, point.current.y)
-    const onMove = (event: PointerEvent) => {
-      point.current = { x: event.clientX, y: event.clientY }
-      place(event.clientX, event.clientY)
+    write()
+
+    function tick(now: number) {
+      const dt = Math.min(now - last, 40) / 1000
+      last = now
+      vx += (140 * (point.current.x - x) - 13 * vx) * dt
+      vy += (140 * (point.current.y - y) - 13 * vy) * dt
+      x += vx * dt
+      y += vy * dt
+      write()
+      raf = requestAnimationFrame(tick)
     }
-    window.addEventListener('pointermove', onMove, { passive: true })
-    return () => window.removeEventListener('pointermove', onMove)
-  }, [active])
+
+    return () => cancelAnimationFrame(raf)
+  }, [hovering])
 
   return (
     <>
@@ -222,13 +239,12 @@ function Services() {
                 point.current = { x: event.clientX, y: event.clientY }
                 setActive(i)
               }}
-              className="group grid grid-cols-[1.75rem_minmax(0,1fr)] items-baseline gap-x-4 gap-y-1.5 py-6 sm:grid-cols-[2.5rem_minmax(0,1fr)_auto] sm:gap-x-6 sm:py-7"
+              className="group grid grid-cols-1 items-baseline gap-y-1.5 py-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-x-6 sm:py-7"
             >
-              <span className="text-[13px] tabular-nums text-faint sm:text-[14px]">0{i + 1}</span>
               <span className="font-display text-[26px] leading-[1.1] text-fg/60 transition-colors duration-300 group-hover:text-fg sm:text-[42px]">
                 {row.title}
               </span>
-              <span className="col-start-2 flex items-baseline gap-2 text-[14px] text-muted transition-colors duration-300 group-hover:text-fg sm:col-start-3 sm:text-[16px]">
+              <span className="flex items-baseline gap-2 text-[14px] text-muted transition-colors duration-300 group-hover:text-fg sm:col-start-2 sm:text-[16px]">
                 {row.places.map((place, j) => (
                   <span key={place} className="flex items-baseline gap-2">
                     {j > 0 && <span className="text-faint">/</span>}
@@ -251,7 +267,7 @@ function Services() {
           ref={ghost}
         aria-hidden
           className={cx(
-            'pointer-events-none fixed left-0 top-0 z-[60] hidden w-[260px] overflow-hidden rounded-[16px] border border-line bg-surface-2 shadow-[0_24px_50px_-30px_rgb(7_25_27/0.55)] transition-[opacity,scale] duration-300 ease-out will-change-transform md:block',
+            'pointer-events-none fixed left-0 top-0 -z-10 hidden w-[260px] overflow-hidden rounded-[16px] border border-line bg-surface-2 shadow-[0_24px_50px_-30px_rgb(7_25_27/0.55)] transition-[opacity,scale] duration-300 ease-out will-change-transform md:block',
             active === null ? 'scale-75 opacity-0' : 'scale-100 opacity-100',
           )}
         >
