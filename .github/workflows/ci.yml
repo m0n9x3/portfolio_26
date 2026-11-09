@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # lockfile 그대로 설치 — CI 에서 의존성이 조용히 올라가지 않게.
+      - run: bun install --frozen-lockfile
+
+      - run: bun run typecheck
+
+  build:
+    needs: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      # Pages 는 /portfolio_26/ 아래에서 서비스되므로 자산 경로도 그 기준으로.
+      # Cloudflare 플러그인 때문에 정적 산출물은 dist/client 에 떨어진다.
+      - run: bunx vite build --base=/portfolio_26/ && node scripts/postbuild.mjs
+
+      # 정적 호스팅에는 SPA 폴백이 없다 — /work 로 바로 들어오면 404.html 이
+      # 대신 응답하고, 그 안의 앱이 경로를 읽어 화면을 그린다.
+      - run: cp dist/client/index.html dist/client/404.html
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/client
+          retention-days: 7
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
