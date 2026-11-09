@@ -191,12 +191,11 @@ function Services() {
   const stage = useRef<HTMLDivElement>(null)
   const point = useRef({ x: 0, y: 0 })
 
-  /* 커서를 따라오는 미리보기. 좌표를 그대로 쓰지 않고 스프링으로 한 박자
-     늦게 따라가게 해서, 손을 멈출 때 살짝 지나쳤다 돌아온다. 감쇠를 임계
-     감쇠보다 약간만 약하게 두어(ζ ≈ 0.72) 도착에 얅은 탄력만 남긴다. 좌표는 화면이
-     아니라 목록 박스 기준으로 환산한다 — 목록과 같은 스태킹 컨텍스트에
-     있어야 글자 뒤로 깔리기 때문. 줄에서 줄로 옮겨 갈 때는 끊기지 않게,
-     목록에 들어오고 나갈 때만 루프를 켜고 끝는다. */
+  /* 커서를 따라오는 미리보기. 좌표로 바로 끌어다 놓지 않고 목표로 수렴만
+     시킨다 — 속도 항이 없으니 지나쳤다 돌아오는 탄력이 생기지 않고,
+     손을 멈추면 얅게 뒤따라와 제자리에 앉는다. 좌표는 화면이 아니라 목록
+     박스 기준으로 환산한다 — 목록과 같은 스태킹 컨텍스트에 있어야 글자
+     뒤로 깔리기 때문. 목록에 들어오고 나갈 때만 루프를 켜고 끝는다. */
   const hovering = active !== null
   useEffect(() => {
     if (!hovering) return
@@ -209,8 +208,6 @@ function Services() {
     }
     let x = point.current.x - rect.left
     let y = point.current.y - rect.top
-    let vx = 0
-    let vy = 0
     let last = performance.now()
     let raf = requestAnimationFrame(tick)
 
@@ -220,12 +217,11 @@ function Services() {
     write()
 
     function tick(now: number) {
-      const dt = Math.min(now - last, 40) / 1000
+      const dt = Math.min(now - last, 40)
       last = now
-      vx += (140 * (point.current.x - rect.left - x) - 17 * vx) * dt
-      vy += (140 * (point.current.y - rect.top - y) - 17 * vy) * dt
-      x += vx * dt
-      y += vy * dt
+      const k = 1 - Math.exp(-dt / 90)
+      x += (point.current.x - rect.left - x) * k
+      y += (point.current.y - rect.top - y) * k
       write()
       raf = requestAnimationFrame(tick)
     }
@@ -277,7 +273,7 @@ function Services() {
         ref={ghost}
         aria-hidden
         className={cx(
-          'pointer-events-none absolute left-0 top-0 z-0 hidden w-[260px] overflow-hidden rounded-[16px] border border-line bg-surface-2 shadow-[0_24px_50px_-30px_rgb(7_25_27/0.55)] transition-[opacity,scale] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform md:block',
+          'pointer-events-none absolute left-0 top-0 z-0 hidden w-[260px] overflow-hidden rounded-[16px] border border-line bg-surface-2 transition-[opacity,scale] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform md:block',
           active === null ? 'scale-50 opacity-0' : 'scale-100 opacity-100',
         )}
       >
