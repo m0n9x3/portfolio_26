@@ -49,7 +49,11 @@ const FOCUS = PLATES.map((q) => parseFocus(q.focus))
 const SNAP = {
   delay: 380, // 스크롤이 멈춘 뒤 정렬 시작까지(ms)
   stiffness: 7.5, // 스프링 강도(1/s) — 클수록 빨리 붙는다
-  maxVelocity: 4200, // 이어받는 초기 속도 상한(px/s)
+  /* 이어받는 초기 속도 상한(px/s). 터치 플링은 관성까지 끝난 뒤에 스냅이
+     걸리는데, 남은 속도를 그대로 이어받으면 목표를 지나 되돌아오는 폭이
+     커진다(상한 4200px/s 에서는 최대 40px 남짓). 1200이면 같은 조건에서
+     10px 안쪽이라 손끝에 걸리지 않는다. */
+  maxVelocity: 1200,
 } as const
 
 /* 판 이동이 시작되는 지점. 앞 구간은 인트로(물·제목·사진 등장)에 쓰이므로
@@ -591,7 +595,12 @@ export function Florilegium() {
       touching = true
       yieldToUser()
     }
-    const onTouchEnd = () => {
+    const onTouchEnd = (e: TouchEvent) => {
+      /* 손가락이 여럿일 때 하나만 뗀 경우엔 아직 끌고 있는 중이다. */
+      touching = (e.touches?.length ?? 0) > 0
+      if (!touching) armSnap()
+    }
+    const onTouchCancel = () => {
       touching = false
       armSnap()
     }
@@ -600,7 +609,7 @@ export function Florilegium() {
     window.addEventListener('wheel', yieldToUser, { passive: true })
     window.addEventListener('touchstart', onTouchStart, { passive: true })
     window.addEventListener('touchend', onTouchEnd, { passive: true })
-    window.addEventListener('touchcancel', onTouchEnd, { passive: true })
+    window.addEventListener('touchcancel', onTouchCancel, { passive: true })
     window.addEventListener('pointerdown', yieldToUser, { passive: true })
 
     gsap.ticker.add(frame)
@@ -610,7 +619,7 @@ export function Florilegium() {
       window.removeEventListener('wheel', yieldToUser)
       window.removeEventListener('touchstart', onTouchStart)
       window.removeEventListener('touchend', onTouchEnd)
-      window.removeEventListener('touchcancel', onTouchEnd)
+      window.removeEventListener('touchcancel', onTouchCancel)
       window.removeEventListener('pointerdown', yieldToUser)
       cancelAnimationFrame(snapRaf)
       window.clearTimeout(snapTimer)
