@@ -193,7 +193,7 @@ function Services() {
 
   /* 커서를 따라오는 미리보기. 좌표를 그대로 쓰지 않고 스프링으로 한 박자
      늦게 따라가게 해서, 손을 멈출 때 살짝 지나쳤다 돌아온다. 감쇠를 임계
-     감쇠보다 약하게 두어(ζ ≈ 0.55) 도착에 탄력이 생긴다. 좌표는 화면이
+     감쇠보다 약간만 약하게 두어(ζ ≈ 0.72) 도착에 얅은 탄력만 남긴다. 좌표는 화면이
      아니라 목록 박스 기준으로 환산한다 — 목록과 같은 스태킹 컨텍스트에
      있어야 글자 뒤로 깔리기 때문. 줄에서 줄로 옮겨 갈 때는 끊기지 않게,
      목록에 들어오고 나갈 때만 루프를 켜고 끝는다. */
@@ -222,8 +222,8 @@ function Services() {
     function tick(now: number) {
       const dt = Math.min(now - last, 40) / 1000
       last = now
-      vx += (140 * (point.current.x - rect.left - x) - 13 * vx) * dt
-      vy += (140 * (point.current.y - rect.top - y) - 13 * vy) * dt
+      vx += (140 * (point.current.x - rect.left - x) - 17 * vx) * dt
+      vy += (140 * (point.current.y - rect.top - y) - 17 * vy) * dt
       x += vx * dt
       y += vy * dt
       write()
@@ -277,8 +277,8 @@ function Services() {
         ref={ghost}
         aria-hidden
         className={cx(
-          'pointer-events-none absolute left-0 top-0 z-0 hidden w-[260px] overflow-hidden rounded-[16px] border border-line bg-surface-2 shadow-[0_24px_50px_-30px_rgb(7_25_27/0.55)] transition-[opacity,scale] duration-300 ease-out will-change-transform md:block',
-          active === null ? 'scale-75 opacity-0' : 'scale-100 opacity-100',
+          'pointer-events-none absolute left-0 top-0 z-0 hidden w-[260px] overflow-hidden rounded-[16px] border border-line bg-surface-2 shadow-[0_24px_50px_-30px_rgb(7_25_27/0.55)] transition-[opacity,scale] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform md:block',
+          active === null ? 'scale-50 opacity-0' : 'scale-100 opacity-100',
         )}
       >
         <div className="relative aspect-[4/3]">
