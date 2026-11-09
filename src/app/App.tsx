@@ -55,8 +55,11 @@ function Pages() {
 }
 
 export function App() {
+  /* GitHub Pages 처럼 하위 경로(/portfolio_26/)에 올라갈 때를 위해
+     Vite 의 base 를 라우터 기준 경로로 넘긴다. 개발 서버에서는 '/' . */
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '')
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={base || '/'}>
       <Preloader />
       <ScrollManager />
       <Nav />
