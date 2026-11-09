@@ -1,9 +1,9 @@
 import { animate } from 'animejs'
-import { ArrowUpRight, Plus } from 'lucide-react'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { ArrowUpRight } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 
-import { services, site, testimonials } from '../../data/site'
+import { site, testimonials } from '../../data/site'
 import { FigmaSelect } from '../components/FigmaSelect'
 import { Florilegium } from '../components/Florilegium'
 import { Hero } from '../components/Hero'
@@ -36,6 +36,16 @@ const PROFILE_TOOLS = {
     'AI를 이용한 개발 작업을 유지보수와 보안을 놓치지 않고 할 수 있어요.',
   ],
 }
+
+/* What I do 아래 링크 목록 — 왼쪽이 제목, 오른쪽이 일한 곳(in COMPANY).
+   판이나 아이콘 없이 텍스트만 두고, 회사 이름만 링크로 읽히게 한다.
+   실제 회사·주소로 바꿀 때는 이 배열만 고치면 된다. */
+const CREDITS = [
+  { title: 'Brand identity', places: ['BDSCAST'] },
+  { title: 'Product design', places: ['MECROSS'] },
+  { title: 'Websites', places: ['BDSCAST'] },
+  { title: 'Creative development', places: ['MECROSS'] },
+]
 
 export function Home() {
   const copyRef = useRef<HTMLDivElement>(null)
@@ -154,9 +164,9 @@ export function Home() {
       <section className="mx-auto max-w-[1400px] px-5 pt-32 sm:px-8 sm:pt-44">
         <div className="grid gap-10 lg:grid-cols-[1fr_2fr] lg:gap-20">
           <div>
-            <Lines as="h2" className="font-display text-[40px] sm:text-[56px]" lines={['What I do']} />
+            <Lines as="h2" className="font-display text-[40px] sm:text-[56px]" lines={['What I do', '그리고..']} />
             <Reveal delay={0.1} className="mt-4 max-w-xs text-[16px] text-muted">
-              Four things, done properly. Most projects are two of them.
+              이런 것들을 더 해왔어요.
             </Reveal>
           </div>
           <Services />
@@ -172,66 +182,35 @@ export function Home() {
   )
 }
 
+/* 수상 내역처럼 한 줄에 제목과 링크 텍스트만 두는 목록. 줄 전체가 링크이고,
+   오른쪽 회사 이름은 호버에서만 밑줄이 그어진다. 좁은 화면에서는 회사
+   이름이 제목 아래로 내려간다(같은 마크업, 그리드 열만 바뀐다). */
 function Services() {
-  const [open, setOpen] = useState(0)
   return (
     <ul className="border-t border-line">
-      {services.map((s, i) => {
-        const isOpen = open === i
-        return (
-          <li key={s.title} className="border-b border-line">
-            <button type="button" aria-expanded={isOpen} onClick={() => setOpen(isOpen ? -1 : i)} className="group flex w-full items-center gap-6 py-7 text-left">
-              <span className="w-10 shrink-0 text-[14px] tabular-nums text-faint">0{i + 1}</span>
-              <span className={cx('font-display flex-1 text-[32px] transition-colors sm:text-[44px]', isOpen ? 'text-fg' : 'text-fg/60 group-hover:text-fg')}>{s.title}</span>
-              <span className={cx('grid size-10 shrink-0 place-items-center rounded-[12px] border border-line-strong transition-colors duration-300', isOpen && 'border-fg bg-fg text-bg')}>
-                <Plus className={cx('size-4 transition-transform duration-500', isOpen && 'rotate-45')} />
-              </span>
-            </button>
-            <Accordion open={isOpen}>
-              <p className="max-w-xl pb-8 pl-16 text-pretty text-[16px] leading-relaxed text-muted">{s.body}</p>
-            </Accordion>
-          </li>
-        )
-      })}
+      {CREDITS.map((row, i) => (
+        <li key={row.title} className="border-b border-line">
+          <Link
+            to="/work"
+            className="group grid grid-cols-[1.75rem_minmax(0,1fr)] items-baseline gap-x-4 gap-y-1.5 py-6 sm:grid-cols-[2.5rem_minmax(0,1fr)_auto] sm:gap-x-6 sm:py-7"
+          >
+            <span className="text-[13px] tabular-nums text-faint sm:text-[14px]">0{i + 1}</span>
+            <span className="font-display text-[26px] leading-[1.1] text-fg/60 transition-colors duration-300 group-hover:text-fg sm:text-[42px]">
+              {row.title}
+            </span>
+            <span className="col-start-2 flex items-baseline gap-2 text-[14px] text-muted transition-colors duration-300 group-hover:text-fg sm:col-start-3 sm:text-[16px]">
+              {row.places.map((place, j) => (
+                <span key={place} className="flex items-baseline gap-2">
+                  {j > 0 && <span className="text-faint">/</span>}
+                  <span className="link-draw">in {place}</span>
+                </span>
+              ))}
+              <ArrowUpRight className="size-4 shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+            </span>
+          </Link>
+        </li>
+      ))}
     </ul>
-  )
-}
-
-/* The panel stays mounted and its height is measured, so anime.js can ease
-   between the real heights instead of guessing at `auto`. */
-function Accordion({ open, children }: { open: boolean; children: ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const mounted = useRef(false)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const rest = () => {
-      el.style.height = open ? 'auto' : '0px'
-      el.style.opacity = open ? '1' : '0'
-    }
-    if (!mounted.current || prefersReduced()) {
-      mounted.current = true
-      rest()
-      return
-    }
-    // `auto` has no height to animate from, so pin the current pixel height
-    // first and only release it once the tween has finished.
-    const from = el.getBoundingClientRect().height
-    el.style.height = `${from}px`
-    animate(el, {
-      height: open ? `${el.scrollHeight}px` : '0px',
-      opacity: open ? 1 : 0,
-      duration: 450,
-      ease: 'outQuart',
-      onComplete: rest,
-    })
-  }, [open])
-
-  return (
-    <div ref={ref} className="overflow-hidden" style={{ height: 0, opacity: 0 }}>
-      {children}
-    </div>
   )
 }
 
