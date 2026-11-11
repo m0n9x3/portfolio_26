@@ -318,32 +318,40 @@
   box-shadow: 0 30px 90px -24px rgba(6, 40, 55, 0.38);
   scrollbar-width: thin;
   scrollbar-color: var(--color-line-strong) transparent;
-  animation: fl-modal-rise 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fl-modal-unfold 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-/* 내용을 기다리는 동안 시트가 작은 판으로 접히지 않게 높이를 잡아 둔다. */
-.fl-modal__sheet.is-loading {
-  align-items: center;
-  justify-content: center;
-  min-height: min(46svh, 340px);
+/* 로딩 중에는 실제 문서와 같은 골격을 먼저 보여 준다 — 빈 판 대신
+   썸네일·제목·슬라이드 자리를 잡아 두면 내용이 올라올 때 튀지 않는다. */
+.fl-modal__skeleton { display: flex; flex-direction: column; gap: clamp(24px, 3vw, 40px); }
+.fl-modal__sk-head { display: grid; gap: clamp(20px, 3vw, 44px); }
+@media (min-width: 900px) {
+  .fl-modal__sk-head { grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr); }
 }
-.fl-modal__loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
+.fl-modal__sk-block,
+.fl-modal__sk-line {
+  display: block;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #edf3f4 20%, #f8fbfb 40%, #edf3f4 60%);
+  background-size: 220% 100%;
+  animation: fl-skeleton 1.4s ease-in-out infinite;
 }
-.fl-modal__loading-label {
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0;
-  text-transform: uppercase;
-  color: var(--color-muted);
+.fl-modal__sk-thumb { aspect-ratio: 4 / 3; border-radius: var(--radius-control); }
+.fl-modal__sk-text { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
+.fl-modal__sk-line { height: 12px; }
+.fl-modal__sk-text > :first-child { width: 24%; }
+.fl-modal__sk-title { width: 68%; height: 34px; margin-top: 6px; }
+.fl-modal__sk-meta { width: 28%; margin-top: 14px; }
+.fl-modal__sk-body { width: 94%; height: 14px; }
+.fl-modal__sk-body + .fl-modal__sk-body { width: 72%; }
+.fl-modal__sk-slides {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(10px, 1.4vw, 18px);
 }
-.fl-modal__loading-count {
-  font-size: 24px;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  color: var(--color-fg);
+.fl-modal__sk-slide { aspect-ratio: 9 / 16; border-radius: var(--radius-control); }
+@keyframes fl-skeleton {
+  from { background-position: 180% 0; }
+  to { background-position: -60% 0; }
 }
 /* 받은 뒤 내용은 한 번에 떠오른다. */
 .fl-modal__sheet.is-ready > * {
@@ -406,7 +414,9 @@
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 6px 20px;
-  margin-top: 30px;
+  margin-top: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--color-line);
   font-size: 13px;
   font-variant-numeric: tabular-nums;
   color: var(--color-muted);
@@ -418,10 +428,11 @@
 .fl-modal__intro p:first-child { color: color-mix(in srgb, var(--color-fg) 82%, transparent); }
 /* Swiper 루트 — 시트 폭을 그대로 쓰고 3.5장이 보이게 넘긴다. */
 .fl-modal__slides { min-width: 0; }
-/* 스크린샷은 테두리 없이 이미지 자체의 색으로만 선다. */
+/* 스크린샷은 흰 시트 위에서 얇은 외곽선으로 경계를 잡는다. */
 .fl-modal__slide {
   display: block;
   overflow: hidden;
+  border: 1px solid var(--color-line);
   border-radius: var(--radius-control);
   background: var(--color-surface-2);
 }
@@ -434,6 +445,59 @@
   transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .fl-modal__slide:hover img { transform: scale(1.03); }
+/* 화살표는 슬라이드 위에 떠 있고, 갈 곳이 없으면 자리에서 사라진다. */
+.fl-modal__viewport { position: relative; }
+.fl-modal__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: opacity 0.25s ease, color 0.2s ease, background 0.2s ease;
+}
+.fl-modal__nav--prev { left: 12px; }
+.fl-modal__nav--next { right: 12px; }
+.fl-modal__nav:hover:not(:disabled) { color: var(--color-fg); background: var(--color-surface-2); }
+.fl-modal__nav:disabled {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+/* 슬라이드 아래 점 페이지네이션 — 점은 6px, 누르는 영역은 20px. */
+.fl-modal__dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+}
+.fl-modal__dot {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.fl-modal__dot::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-line-strong);
+  transition: background 0.2s ease, transform 0.25s ease;
+}
+.fl-modal__dot:hover::before { background: var(--color-muted); }
+.fl-modal__dot.is-active::before { background: var(--color-fg); transform: scale(1.2); }
 .fl-modal__cols { display: grid; gap: clamp(16px, 2.6vw, 40px); }
 @media (min-width: 760px) {
   .fl-modal__cols { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -445,5 +509,17 @@
   .fl-modal__close { top: 18px; right: 18px; }
 }
 @keyframes fl-modal-fade { from { opacity: 0; } }
-@keyframes fl-modal-rise { from { opacity: 0; transform: translateY(18px) scale(0.985); } }
+/* 가운데 작은 면에서 사방으로 펼쳐지며 앉는다. */
+@keyframes fl-modal-unfold {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+    clip-path: inset(16% 12% round 22px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 round var(--radius-image));
+  }
+}
 @keyframes fl-modal-content { from { opacity: 0; transform: translateY(8px); } }

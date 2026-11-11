@@ -8,7 +8,7 @@
 import './florilegium.css'
 
 import gsap from 'gsap'
-import { X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
@@ -832,6 +832,16 @@ export function Florilegium() {
   )
 }
 
+type SwiperHandle = {
+  slideNext: () => void
+  slidePrev: () => void
+  slideTo: (index: number) => void
+  isBeginning: boolean
+  isEnd: boolean
+  activeIndex: number
+  slides: { length: number }
+}
+
 /* 판을 클릭하면 열리는 문서형 상세. 넓은 화면에서 좌우로 펼친 한 장의
    문서처럼 읽히도록 썸네일+소개, 앱 화면, 2단 문단 순서로 쌓는다. */
 function PlateModal({ index, onClose }: { index: number; onClose: () => void }) {
@@ -840,8 +850,26 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
 
   /* 내용은 모달이 열린 뒤에야 만든다 — 갤러리 단계에서는 상세 이미지를
      하나도 요청하지 않고, 열리면 진행률을 채우며 받아 온다. */
-  const [progress, setProgress] = useState(0)
   const [ready, setReady] = useState(false)
+  /* Swiper 인스턴스는 렌더에 필요 없으니 ref 로, 화살표 표시만 상태로 둔다. */
+  const swiperRef = useRef<SwiperHandle | null>(null)
+  const [edges, setEdges] = useState({ prev: false, next: false })
+  const [activeSlide, setActiveSlide] = useState(0)
+  /* 점으로 이동한 직후에는 Swiper 의 activeIndex(끝에서 앞쪽 슬라이드를
+     가리킴) 대신 누른 점을 그대로 활성으로 둔다. */
+  const jumpingRef = useRef(false)
+  const syncEdges = (s: SwiperHandle) => {
+    setEdges({ prev: !s.isBeginning, next: !s.isEnd })
+    if (!jumpingRef.current) {
+      setActiveSlide(s.isEnd ? s.slides.length - 1 : s.isBeginning ? 0 : s.activeIndex)
+    }
+  }
+  const goToSlide = (i: number) => {
+    jumpingRef.current = true
+    setActiveSlide(i)
+    swiperRef.current?.slideTo(i)
+    window.setTimeout(() => { jumpingRef.current = false }, 450)
+  }
 
   /* 뒤 페이지가 같이 스크롤되지 않게 잠그고, 스크롤바가 사라진 폭만큼 오른쪽을
      채워 화면이 옆으로 흔들리지 않게 한다. Esc 로도 닫힌다. */
@@ -869,7 +897,6 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
     const total = Math.max(1, srcs.length)
     let alive = true
     let done = 0
-    let shown = 0
     const startedAt = performance.now()
 
     const images = srcs.map((src) => {
@@ -882,12 +909,8 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
 
     const timer = window.setInterval(() => {
       if (!alive) return
-      const goal = Math.min(done / total, (performance.now() - startedAt) / 520)
-      shown = Math.max(shown, goal)
-      setProgress(shown)
-      if (done === total && shown > 0.995) {
+      if (done === total && performance.now() - startedAt >= 520) {
         window.clearInterval(timer)
-        setProgress(1)
         setReady(true)
       }
     }, 40)
@@ -918,11 +941,22 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
 
         <article className={`fl-modal__sheet${ready ? ' is-ready' : ' is-loading'}`}>
           {!ready && (
-            <div className="fl-modal__loading" role="status" aria-live="polite">
-              <span className="fl-modal__loading-label">LOADING</span>
-              <span className="fl-modal__loading-count">
-                {String(Math.round(progress * 100)).padStart(3, '0')}%
-              </span>
+            <div className="fl-modal__skeleton" role="status" aria-label="작업 상세를 불러오는 중">
+              <div className="fl-modal__sk-head" aria-hidden="true">
+                <span className="fl-modal__sk-block fl-modal__sk-thumb" />
+                <div className="fl-modal__sk-text">
+                  <span className="fl-modal__sk-line" />
+                  <span className="fl-modal__sk-line fl-modal__sk-title" />
+                  <span className="fl-modal__sk-line fl-modal__sk-meta" />
+                  <span className="fl-modal__sk-line fl-modal__sk-body" />
+                  <span className="fl-modal__sk-line fl-modal__sk-body" />
+                </div>
+              </div>
+              <div className="fl-modal__sk-slides" aria-hidden="true">
+                {[0, 1, 2, 3].map((i) => (
+                  <span key={i} className="fl-modal__sk-block fl-modal__sk-slide" />
+                ))}
+              </div>
             </div>
           )}
 
@@ -951,25 +985,67 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
               </header>
 
               {detail?.slides && (
-                <section className="fl-modal__section" aria-label="앱 화면">
-                  {/* 3.5장이 보이고 남은 한 장은 끌어서 넘긴다. 좁은 화면에서는
-                      1.2장 — 다음 장이 살짝 걸쳐 넘길 수 있다는 걸 알린다. */}
-                  <Swiper
-                    className="fl-modal__slides"
-                    slidesPerView={3.5}
-                    spaceBetween={18}
-                    breakpoints={{
-                      0: { slidesPerView: 1.2, spaceBetween: 10 },
-                      760: { slidesPerView: 3.5, spaceBetween: 18 },
-                    }}
-                    grabCursor
-                  >
+                <section className="fl-modal__section fl-modal__gallery" aria-label="앱 화면">
+                  <div className="fl-modal__viewport">
+                    {/* 3.5장이 보이고 남은 한 장은 끌어서 넘긴다. 좁은 화면에서는
+                        1.2장 — 다음 장이 살짝 걸쳐 넘길 수 있다는 걸 알린다. */}
+                    <Swiper
+                      className="fl-modal__slides"
+                      slidesPerView={3.5}
+                      spaceBetween={18}
+                      breakpoints={{
+                        0: { slidesPerView: 1.2, spaceBetween: 10 },
+                        760: { slidesPerView: 3.5, spaceBetween: 18 },
+                      }}
+                      grabCursor
+                      onSwiper={(s) => {
+                        swiperRef.current = s
+                        syncEdges(s)
+                      }}
+                      onSlideChange={syncEdges}
+                      onResize={syncEdges}
+                    >
+                      {detail.slides.map((src, i) => (
+                        <SwiperSlide key={src} className="fl-modal__slide">
+                          <img src={src} alt={`${plate.title} 화면 ${i + 1}`} draggable={false} />
+                        </SwiperSlide>
+                      ))}
+                    </Swiper>
+
+                    {/* 갈 곳이 있을 때만 보이는 화살표. 끝에 닿으면 사라진다. */}
+                    <button
+                      type="button"
+                      className="fl-modal__nav fl-modal__nav--prev"
+                      onClick={() => swiperRef.current?.slidePrev()}
+                      disabled={!edges.prev}
+                      aria-label="이전 앱 화면"
+                    >
+                      <ChevronLeft className="size-4" strokeWidth={1.6} />
+                    </button>
+                    <button
+                      type="button"
+                      className="fl-modal__nav fl-modal__nav--next"
+                      onClick={() => swiperRef.current?.slideNext()}
+                      disabled={!edges.next}
+                      aria-label="다음 앱 화면"
+                    >
+                      <ChevronRight className="size-4" strokeWidth={1.6} />
+                    </button>
+                  </div>
+
+                  {/* 점 페이지네이션 — 점을 누르면 그 화면으로 바로 간다. */}
+                  <div className="fl-modal__dots">
                     {detail.slides.map((src, i) => (
-                      <SwiperSlide key={src} className="fl-modal__slide">
-                        <img src={src} alt={`${plate.title} 화면 ${i + 1}`} draggable={false} />
-                      </SwiperSlide>
+                      <button
+                        key={src}
+                        type="button"
+                        className={`fl-modal__dot${i === activeSlide ? ' is-active' : ''}`}
+                        onClick={() => goToSlide(i)}
+                        aria-label={`${i + 1}번째 앱 화면`}
+                        aria-current={i === activeSlide ? 'true' : undefined}
+                      />
                     ))}
-                  </Swiper>
+                  </div>
                 </section>
               )}
 
