@@ -1,6 +1,7 @@
 import { animate } from 'animejs'
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 
+import { INTRO_HERO_AT } from '../lib/intro'
 import { prefersReduced } from '../lib/reduced'
 
 /* Where the headline changes as the hero is scrolled through. */
@@ -62,10 +63,10 @@ export function Hero() {
   const delayRef = useRef(delay)
   delayRef.current = delay
 
-  // The preloader covers the first 1.5s of a fresh tab; surfacing after it is
-  // the whole point, so the type waits for the curtain.
+  // 인트로 판이 걷히기 시작하는 순간부터 장면이 시작된다. 로딩 뒤에
+  // 올라와야 하므로, 판이 덮고 있는 동안에는 히어로가 움직이지 않는다.
   useEffect(() => {
-    setDelay(sessionStorage.getItem('preloaded') ? 0.35 : 1.8)
+    setDelay(INTRO_HERO_AT / 1000)
   }, [])
 
   useEffect(() => {

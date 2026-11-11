@@ -1,0 +1,116 @@
+/* 인트로 — 흰 회색 판 위에 글자만. 왼쪽 브랜드, 가운데 이름, 오른쪽 진행률.
+   좌우는 헤더와 같은 박스(max-width 1400px, 안쪽 여백 14px / 32px)를 쓴다.
+   최소 2초를 채운 뒤, 판 전체가 흐려지며 히어로가 드러난다. */
+
+.pre {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  /* 글자는 판의 아래쪽에 앉는다 — 하단 여백은 레퍼런스의 66px을 기준으로,
+     낮은 화면에서는 6vh로 줄어든다. */
+  align-items: flex-end;
+  padding-bottom: clamp(28px, 6vh, 66px);
+  background: #f7f7f7;
+  color: #022016;
+  pointer-events: none;
+  user-select: none;
+  transition:
+    opacity 720ms ease 60ms,
+    filter 720ms ease 60ms;
+  will-change: opacity, filter;
+}
+
+/* 판이 흐려지며 히어로가 드러난다. */
+.pre.is-leaving {
+  opacity: 0;
+  filter: blur(14px);
+}
+
+/* 헤더의 컨테이너와 같은 상자 — mx-auto, max-w-[1400px], px-3.5 sm:px-8.
+   인트로의 브랜드와 진행률이 헤더의 이름·주소와 같은 세로선에 선다. */
+.pre-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 16px;
+  width: 100%;
+  max-width: 1400px;
+  margin-inline: auto;
+  padding-inline: 14px;
+}
+
+@media (min-width: 640px) {
+  .pre-inner {
+    padding-inline: 32px;
+  }
+}
+
+.pre-left {
+  justify-self: start;
+}
+
+.pre-center {
+  justify-self: center;
+}
+
+.pre-right {
+  justify-self: end;
+}
+
+/* 글자가 미끄러져 나오고 들어가는 홈 — 위아래로 잘려 있다. */
+.pre-mask {
+  display: block;
+  overflow: hidden;
+}
+
+.pre-line {
+  display: block;
+  white-space: nowrap;
+  font-size: clamp(15px, 1.1vw, 17px);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  transform: translateY(115%) rotate(4deg);
+  opacity: 0;
+  transition:
+    transform 900ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 700ms ease;
+  transition-delay: calc(var(--i, 0) * 90ms);
+  will-change: transform;
+}
+
+.pre.is-in .pre-line {
+  transform: none;
+  opacity: 1;
+}
+
+.pre.is-leaving .pre-line {
+  transform: translateY(-115%) rotate(-4deg);
+  opacity: 0;
+  transition-duration: 520ms;
+  transition-delay: calc(var(--i, 0) * 60ms);
+}
+
+.pre-line.is-muted {
+  color: rgb(2 32 22 / 0.45);
+}
+
+/* 진행률 — 자릿수가 흔들리지 않게 고정폭. */
+.pre-progress {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 좁은 화면에서는 칸이 모자라 가운데가 겹치므로, 같은 줄에 나눠 앉히고
+   글자를 조금 줄인다. 좌우 여백은 헤더의 px-3.5(14px)를 그대로 쓴다. */
+@media (max-width: 420px) {
+  .pre-inner {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .pre-line {
+    font-size: 13px;
+  }
+}
