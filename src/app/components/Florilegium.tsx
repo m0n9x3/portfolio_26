@@ -8,10 +8,12 @@
 import './florilegium.css'
 
 import gsap from 'gsap'
+import { X } from 'lucide-react'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
+import { createPortal } from 'react-dom'
 
-import { PLATES, PLATE_DAYS, fmtCalendar } from '../data/florilegium'
+import { PLATES, PLATE_DAYS, fmtCalendar, fmtDate } from '../data/florilegium'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -42,6 +44,7 @@ const ASPECT = 4 / 3
    map()으로 새 배열을 만들고 "50% 30%" 문자열을 다시 파싱할 이유가 없다. */
 const TINTS = PLATES.map((q) => q.tint)
 const FOCUS = PLATES.map((q) => parseFocus(q.focus))
+const STILL = PLATES.map((q) => q.still === true)
 
 /* 스냅 — 스크롤이 멈추면 가장 가까운 날짜로 붙는다. 고정 시간 이징 대신
    지금의 스크롤 속도를 이어받는 크리티컬 댐핑 스프링을 써서, 사용자가 멈춘
@@ -102,6 +105,8 @@ function paintUnderwater(
     loaded: boolean[]
     tints: string[]
     focus: [number, number][]
+    /* 판 이미지의 확대·흔들림을 끈 판(원본 비율 그대로 보인다). */
+    still: boolean[]
     /* 1 = 수면 위(DOM), 0 = 물속(레이어에서 그림). 전환 중에는 둘을 섞는다. */
     surface: number[]
     /* 사진이 드러나는 정도(0..1). 물속 판도 같은 페이드를 따른다. */
@@ -110,7 +115,7 @@ function paintUnderwater(
     growAmt: number
   },
 ) {
-  const { vw, vh, f, centerY, offset, X, W, H, imgs, loaded, tints, focus, surface, reveal, growAmt } = o
+  const { vw, vh, f, centerY, offset, X, W, H, imgs, loaded, tints, focus, still, surface, reveal, growAmt } = o
   if (!water.width || !water.height || !vw || !vh) return
   if (layer.width !== water.width || layer.height !== water.height) {
     layer.width = water.width
@@ -169,11 +174,12 @@ function paintUnderwater(
     ctx.fillRect(x, y, gw, gh)
     const img = imgs[i]
     if (img && loaded[i] && img.naturalWidth && img.naturalHeight) {
-      const scale = Math.max(gw / img.naturalWidth, gh / img.naturalHeight) * 1.22
+      const flat = still[i]
+      const scale = Math.max(gw / img.naturalWidth, gh / img.naturalHeight) * (flat ? 1 : 1.22)
       const dw = img.naturalWidth * scale
       const dh = img.naturalHeight * scale
       const [fx, fy] = focus[i] ?? [0.5, 0.5]
-      const tx = (clamp(-(i - f) * 7, -10, 10) / 100) * gw
+      const tx = flat ? 0 : (clamp(-(i - f) * 7, -10, 10) / 100) * gw
       try {
         ctx.drawImage(img, x + (gw - dw) * fx + tx, y + (gh - dh) * fy, dw, dh)
       } catch {
@@ -255,6 +261,9 @@ export function Florilegium() {
   }, [reduced])
 
   const [active, setActive] = useState(0)
+  /* 설명 모달로 열어 둔 판. null 이면 닫힌 상태. */
+  const [opened, setOpened] = useState<number | null>(null)
+  const closeModal = useCallback(() => setOpened(null), [])
   const [loaded, setLoaded] = useState<boolean[]>(() => PLATES.map(() => false))
   const [failed, setFailed] = useState<boolean[]>(() => PLATES.map(() => false))
   const loadedCount = loaded.filter(Boolean).length + failed.filter(Boolean).length
@@ -417,7 +426,7 @@ export function Florilegium() {
         const grow = 1 + growAmt * focus
         el.style.transform = `translate3d(${x - W[i] / 2}px, ${centerY - H[i] / 2 + lift}px, 0) skewX(${skew.toFixed(2)}deg) scale(${grow.toFixed(3)})`
         const img = imgsRef.current[i]
-        if (img) img.style.transform = `translate3d(${clamp(-(i - f) * 7, -10, 10)}%, 0, 0) scale(1.22)`
+        if (img) img.style.transform = STILL[i] ? 'none' : `translate3d(${clamp(-(i - f) * 7, -10, 10)}%, 0, 0) scale(1.22)`
         /* 물이 판을 그리는 동안: 수면 위로 올라온 만큼만 DOM 판을 보여준다.
            두 겹을 겹쳐 페이드하므로 활성 전환에 번쩍임이 없다. */
         if (bakedRef.current) {
@@ -473,6 +482,7 @@ export function Florilegium() {
               loaded: loadedRef.current,
               tints: TINTS,
               focus: FOCUS,
+              still: STILL,
               reveal,
               growAmt,
               surface,
@@ -700,7 +710,7 @@ export function Florilegium() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const st = stRef.current
-      if (!st || !st.isActive) return
+      if (!st || !st.isActive || opened !== null) return
       if ((e.target as HTMLElement).closest('input, textarea')) return
       if (e.key === 'ArrowRight') { e.preventDefault(); goTo(active + 1) }
       if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(active - 1) }
@@ -708,7 +718,7 @@ export function Florilegium() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, reduced])
+  }, [active, reduced, opened])
 
   const plate = PLATES[active]
 
@@ -734,7 +744,15 @@ export function Florilegium() {
 
           <div ref={chromeRef} className="fl-chrome">
             <div ref={captionRef} className="fl-caption" aria-live="polite">
-              <span key={active} className="fl-caption__title">{plate.title}</span>
+              {/* 제목을 누르면 설명 모달이 열린다 — 사진을 클릭해도 같은 모달이 뜬다. */}
+              <button
+                key={active}
+                type="button"
+                className="fl-caption__title"
+                onClick={() => setOpened(active)}
+              >
+                {plate.title}
+              </button>
             </div>
 
             <div className="fl-time" aria-hidden="true">
@@ -781,7 +799,7 @@ export function Florilegium() {
                 style={{ background: p.tint }}
                 aria-label={`${p.title}, ${p.note}`}
                 aria-current={i === active ? 'true' : undefined}
-                onClick={() => goTo(i)}
+                onClick={() => (i === active ? setOpened(i) : goTo(i))}
               >
                 <span className="fl-card__clip">
                   {!failed[i] ? (
@@ -806,6 +824,61 @@ export function Florilegium() {
           </div>
         </div>
       </section>
+
+      {opened !== null && createPortal(<PlateModal index={opened} onClose={closeModal} />, document.body)}
+    </div>
+  )
+}
+
+/* 판을 클릭하면 열리는 설명 모달. 이미지・날짜・제목・설명을 한 패널에 둔다. */
+function PlateModal({ index, onClose }: { index: number; onClose: () => void }) {
+  const plate = PLATES[index]
+
+  /* 뒤 페이지가 같이 스크롤되지 않게 잠그고, 스크롤바가 사라진 폭만큼 오른쪽을
+     채워 화면이 옆으로 흔들리지 않게 한다. Esc 로도 닫힌다. */
+  useEffect(() => {
+    const body = document.body
+    const gap = window.innerWidth - document.documentElement.clientWidth
+    const prev = { overflow: body.style.overflow, paddingRight: body.style.paddingRight }
+    body.style.overflow = 'hidden'
+    if (gap > 0) body.style.paddingRight = `${gap}px`
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      body.style.overflow = prev.overflow
+      body.style.paddingRight = prev.paddingRight
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [onClose])
+
+  return (
+    <div className="fl-modal" role="presentation" onClick={onClose}>
+      <div
+        className="fl-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="fl-modal-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button type="button" className="fl-modal__close" onClick={onClose} aria-label="닫기" autoFocus>
+          <X className="size-4" strokeWidth={1.6} />
+        </button>
+
+        <div className="fl-modal__figure" style={{ background: plate.tint }}>
+          <img src={plate.src} alt="" draggable={false} />
+        </div>
+
+        <div className="fl-modal__body">
+          <p className="fl-modal__date">{fmtDate(PLATE_DAYS[index])}</p>
+          <h3 id="fl-modal-title" className="fl-modal__title">{plate.title}</h3>
+          <p className="fl-modal__note">{plate.note}</p>
+          {plate.desc?.map((line) => (
+            <p key={line} className="fl-modal__desc">{line}</p>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
