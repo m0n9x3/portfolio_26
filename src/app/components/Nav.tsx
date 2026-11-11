@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router'
 
 import { cx } from '../lib/cx'
 
@@ -21,12 +22,14 @@ export function Nav() {
       <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between gap-3 px-3.5 sm:gap-4 sm:px-8">
         {/* The name stays on one line: at 320px it used to wrap under the
             menu and collide with it. MY LIFE만 굵게, DE:SIGN은 300. */}
-        <span className="shrink-0 whitespace-nowrap text-[18px]">
+        <Link to="/" className="shrink-0 whitespace-nowrap text-[18px]">
           <span className="font-[300]">DE:SIGN{' '}</span>
           <span className="font-bold">MY LIFE</span>
-        </span>
+        </Link>
         <nav>
-          <span className="text-[16px] text-muted">harok96y@naver.com</span>
+          <a className="text-[16px] text-muted" href="mailto:harok96y@naver.com">
+            harok96y@naver.com
+          </a>
         </nav>
       </div>
     </header>

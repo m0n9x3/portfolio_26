@@ -290,6 +290,8 @@
   inset: 0;
   z-index: 95;
   display: grid;
+  /* 콘텐츠(Swiper)의 min-content 가 트랙을 밀어내지 않게 한 열로 고정한다. */
+  grid-template-columns: minmax(0, 1fr);
   place-items: center;
   padding: clamp(12px, 3vw, 40px);
   background: color-mix(in srgb, var(--color-fg) 34%, transparent);
@@ -301,6 +303,7 @@
 .fl-modal__frame {
   position: relative;
   width: min(1180px, 100%);
+  min-width: 0;
   max-height: 88svh;
 }
 /* 순백 시트. 안쪽은 선 없이 여백만으로 나누고, 시트 자체는 바깥 그림자

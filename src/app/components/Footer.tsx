@@ -282,9 +282,12 @@ export function Footer() {
         {/* 팩 아래 두 줄 — 한 줄 건네고, 주소가 이어진다. */}
         <div className="fin-meta mt-[clamp(56px,8vw,76px)] flex flex-col items-center gap-1.5 text-center">
           <p className="text-[18px] leading-[1.4] text-muted">함께 하고 싶어요 :)</p>
-          <span className="text-[clamp(22px,5.6vw,34px)] leading-[1.1] font-bold tracking-[-0.025em]">
+          <a
+            className="link-draw pb-1 text-[clamp(22px,5.6vw,34px)] leading-[1.1] font-bold tracking-[-0.025em]"
+            href={`mailto:${EMAIL}`}
+          >
             {EMAIL}
-          </span>
+          </a>
         </div>
       </div>
     </footer>

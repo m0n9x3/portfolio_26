@@ -155,10 +155,15 @@ export function Home() {
               </div>
             </Reveal>
             <Reveal delay={0.3} className="mt-8">
-              <span className="inline-flex items-center gap-1.5 text-[16px] font-medium">
-                More about me
-                <ArrowUpRight className="size-4" />
-              </span>
+              <a
+                className="group inline-flex items-center gap-1.5 text-[16px] font-medium"
+                href="https://harok96y.notion.site/PROFILE-414ab5b16a308076b4f8c4f3c048923f"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <span className="link-draw">More about me</span>
+                <ArrowUpRight className="size-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </a>
             </Reveal>
           </div>
         </div>
