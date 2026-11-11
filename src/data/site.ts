@@ -3,19 +3,12 @@ import { asset } from '../app/lib/asset'
 
 export const site = {
   name: 'DE:SIGN MY LIFE',
-  role: 'Designer and creative developer',
-  location: 'Lisbon',
-  timezone: 'Europe/Lisbon',
-  email: 'hello@yourname.studio',
-  available: true,
-  intro: 'I design brands, products and websites for people building something worth looking at. Ten years in, still curious.',
   socials: [
     { label: 'Instagram', href: '#' },
     { label: 'Are.na', href: '#' },
     { label: 'LinkedIn', href: '#' },
     { label: 'Read.cv', href: '#' },
   ],
-  marquee: ['Brand identity', 'Product design', 'Web design', 'Creative development', 'Art direction', 'Motion'],
 }
 
 export interface Project {
@@ -147,43 +140,6 @@ export const projects: Project[] = [
 ]
 
 export const bySlug = (slug: string) => projects.find((p) => p.slug === slug)
-
-export const services = [
-  {
-    title: 'Brand identity',
-    body: 'Naming, identity systems, guidelines and the motion that makes them feel alive. Built to be used by your team, not just admired by mine.',
-  },
-  {
-    title: 'Product design',
-    body: 'Research, flows, interface and design systems for apps and software. I work inside the product team, in your tools, at your pace.',
-  },
-  {
-    title: 'Websites',
-    body: 'Marketing sites, storefronts and editorial platforms, designed and built. Fast, accessible, and easy to keep updated without me.',
-  },
-  {
-    title: 'Creative development',
-    body: 'The interactive and generative layer: WebGL, motion, shaders and the small details that make a site feel considered.',
-  },
-]
-
-export const testimonials = [
-  {
-    quote: 'The rare designer who can hold the whole thing in their head: the brand, the product, the code. We shipped in half the time and it looks twice as good.',
-    name: 'Lena Fischer',
-    role: 'Founder, Aurora Climate',
-  },
-  {
-    quote: 'Every review ended with us removing something. I have never worked with anyone so good at taking things away.',
-    name: 'Charlotte Ng',
-    role: 'Head of Digital, Meridian Bank',
-  },
-  {
-    quote: 'Our site finally feels like our hotels. Guests mention it at check-in.',
-    name: 'Jonas Weber',
-    role: 'Owner, Halcyon Hotels',
-  },
-]
 
 export const experience = [
   { period: '2021 to now', title: 'Independent', detail: 'Brand, product and web for startups and studios' },

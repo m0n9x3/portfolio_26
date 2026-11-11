@@ -48,24 +48,9 @@
   --radius-image: 28px;
 
   --animate-marquee: marquee 30s linear infinite;
-  --animate-drift-a: drift-a 22s ease-in-out infinite alternate;
-  --animate-drift-b: drift-b 26s ease-in-out infinite alternate;
-  --animate-drift-c: drift-c 30s ease-in-out infinite alternate;
   @keyframes marquee {
     from { transform: translateX(0); }
     to { transform: translateX(-50%); }
-  }
-  @keyframes drift-a {
-    from { transform: translate3d(0, 0, 0) scale(1); }
-    to { transform: translate3d(-10%, 12%, 0) scale(1.12); }
-  }
-  @keyframes drift-b {
-    from { transform: translate3d(0, 0, 0) scale(1.05); }
-    to { transform: translate3d(14%, -8%, 0) scale(0.95); }
-  }
-  @keyframes drift-c {
-    from { transform: translate3d(0, 6%, 0) scale(0.95); }
-    to { transform: translate3d(-8%, -10%, 0) scale(1.15); }
   }
 }
 
@@ -178,13 +163,6 @@
   line-height: 1.1;
 }
 
-@utility font-display-wide {
-  font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-}
-
 @utility text-balance {
   text-wrap: balance;
 }
@@ -207,14 +185,6 @@
 @utility image-frame {
   background: var(--color-surface-2);
   overflow: hidden;
-}
-
-/* Type read through the water: pale light under a dark surface, a touch of
-   softness, and the SVG displacement filter defined in the hero. */
-@utility hero-wet {
-  color: rgb(9 58 65 / 0.94);
-  text-shadow: 0 0 50px rgb(255 255 255 / 0.6);
-  filter: url(#hero-water) blur(0.4px);
 }
 
 /* The headline pass rises out of the pool on arrival, and again whenever the
@@ -360,7 +330,7 @@
 
 /* ------------------------------------------------------------------ glass
    One set of tokens per state. A surface opts in by carrying
-   data-glass="light | on-dark | dark" plus the .glass-surface class, and reads
+   data-glass="light | on-dark | dark" and reads
    the tokens; nothing hard-codes a tint or an edge. Every number is registered
    so a state change interpolates instead of jumping. */
 
@@ -474,59 +444,6 @@
     --glass-ink-a 0.28s cubic-bezier(0.22, 1, 0.36, 1),
     --glass-ink2-a 0.28s cubic-bezier(0.22, 1, 0.36, 1),
     --glass-row-a 0.24s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* The body of the glass: a thin tint, a backdrop that carries the colour, and
-   the rim — two bright insets top-left and bottom-right, a 0.5px hairline, a
-   0.5px black outline outside it, and a soft cast shadow. */
-@utility glass-surface {
-  background-color: rgb(var(--glass-r) var(--glass-g) var(--glass-b) / var(--glass-tint-a));
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)) brightness(var(--glass-bright));
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)) brightness(var(--glass-bright));
-  box-shadow:
-    inset 1.5px 1.5px 1px -1px rgb(255 255 255 / var(--glass-edge-a1)),
-    inset -1.5px -1.5px 1px -1px rgb(255 255 255 / var(--glass-edge-a2)),
-    inset 0 0 0 0.5px rgb(255 255 255 / var(--glass-hairline-a)),
-    0 0 0 0.5px rgb(0 0 0 / var(--glass-outline-a)),
-    0 6px 24px rgb(0 0 0 / var(--glass-shadow-a));
-}
-
-/* Inner light, on its own layer inside the surface: a highlight falling from
-   the top left, brighter glows just inside the top and left rim, a little
-   shade at the bottom. One opacity scales the whole thing. */
-@utility glass-light {
-  position: absolute;
-  inset: 1px;
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: var(--glass-inner);
-  background: radial-gradient(130% 100% at 20% 0%, rgb(255 255 255 / 0.2), transparent 55%);
-  box-shadow:
-    inset 7px 9px 14px -10px rgb(255 255 255 / 0.75),
-    inset -5px -7px 12px -10px rgb(0 0 0 / 0.22);
-}
-
-/* A highlighted row is a lighter layer of the glass, never a grey wash. */
-@utility glass-row {
-  position: absolute;
-  inset: 1.5px;
-  border-radius: inherit;
-  pointer-events: none;
-  background-color: rgb(255 255 255 / 1);
-  box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.9);
-  opacity: var(--glass-row-a);
-  transition: opacity 0.24s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* Ink: everything drawn on the glass. Multiply on light glass so strokes and
-   fills darken rather than sit on top of it; plus-lighter on dark glass. */
-@utility glass-ink {
-  color: rgb(var(--glass-ink-rgb) / var(--glass-ink-a));
-  mix-blend-mode: var(--glass-ink-blend);
-}
-@utility glass-ink-2 {
-  color: rgb(var(--glass-ink2-rgb) / var(--glass-ink2-a));
-  mix-blend-mode: var(--glass-ink-blend);
 }
 
 /* The cursor: an optical lens rather than a pane of glass. The reference
