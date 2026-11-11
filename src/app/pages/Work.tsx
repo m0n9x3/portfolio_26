@@ -2,6 +2,7 @@ import { ArrowLeft, ArrowUpRight } from 'lucide-react'
 import { Navigate, useParams } from 'react-router'
 
 import { bySlug, projects } from '../../data/site'
+import { imageSet, imageSrc } from '../lib/asset'
 import { Lines, Parallax, Reveal } from '../components/motion'
 
 export function Work() {
@@ -26,7 +27,16 @@ export function Work() {
       </div>
 
       <Reveal delay={0.2} y={30} scale={0.98} className="mt-12 overflow-hidden rounded-[32px]" style={{ background: project.tint }}>
-        <Parallax src={project.cover} alt={project.title} className="aspect-[16/10] sm:aspect-[16/9]" strength={5} />
+        <Parallax
+          src={imageSrc(project.cover, 1100)}
+          srcSet={imageSet(project.cover, [480, 1100])}
+          sizes="(min-width: 1024px) 78vw, 100vw"
+          width={1100}
+          height={825}
+          alt={project.title}
+          className="aspect-[16/10] sm:aspect-[16/9]"
+          strength={5}
+        />
       </Reveal>
 
       <div className="mt-16 grid gap-12 lg:grid-cols-[320px_1fr] lg:gap-24">
@@ -65,12 +75,28 @@ export function Work() {
       <div className="mt-16 grid gap-6 md:grid-cols-2">
         <Reveal>
           <div className="image-frame aspect-[4/3] rounded-image" style={{ background: project.tint }}>
-            <img src={project.cover} alt="" className="size-full object-cover" style={{ transform: 'scale(1.6)', transformOrigin: '30% 40%' }} />
+            <img
+              src={imageSrc(project.cover, 1100)}
+              srcSet={imageSet(project.cover, [480, 1100])}
+              sizes="(min-width: 768px) 45vw, 100vw"
+              alt=""
+              decoding="async"
+              className="size-full object-cover"
+              style={{ transform: 'scale(1.6)', transformOrigin: '30% 40%' }}
+            />
           </div>
         </Reveal>
         <Reveal delay={0.1}>
           <div className="image-frame aspect-[4/3] rounded-image" style={{ background: project.tint }}>
-            <img src={project.cover} alt="" className="size-full object-cover" style={{ transform: 'scale(2.2)', transformOrigin: '70% 65%' }} />
+            <img
+              src={imageSrc(project.cover, 1100)}
+              srcSet={imageSet(project.cover, [480, 1100])}
+              sizes="(min-width: 768px) 45vw, 100vw"
+              alt=""
+              decoding="async"
+              className="size-full object-cover"
+              style={{ transform: 'scale(2.2)', transformOrigin: '70% 65%' }}
+            />
           </div>
         </Reveal>
       </div>
@@ -80,7 +106,14 @@ export function Work() {
         <div className="mt-3 flex items-end justify-between gap-6">
           <h2 className="font-display text-[clamp(44px,8vw,120px)] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-3">{next.title}</h2>
           <span className="image-frame hidden aspect-[4/3] w-[260px] shrink-0 rounded-[20px] sm:block" style={{ background: next.tint }}>
-            <img src={next.cover} alt="" className="size-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            <img
+              src={imageSrc(next.cover, 1100)}
+              srcSet={imageSet(next.cover, [480, 1100])}
+              sizes="260px"
+              alt=""
+              decoding="async"
+              className="size-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
           </span>
         </div>
       </div>

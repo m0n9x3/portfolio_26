@@ -5,3 +5,16 @@
 export function asset(path: string) {
   return import.meta.env.BASE_URL.replace(/\/$/, '') + path
 }
+
+/* 원본 이미지 옆에 미리 만들어 둔 WebP 파생본({이름}-{폭}.webp)을 가리킨다.
+   원본(예: /images/portrait.jpg)은 화질 손실 없는 마스터로 public 에 그대로
+   두고, 실제로 내려보내는 것은 파생본이다. */
+const stripExt = (path: string) => path.replace(/\.(jpe?g|png|webp|gif)$/i, '')
+
+export function imageSrc(src: string, width: number) {
+  return `${stripExt(src)}-${width}.webp`
+}
+
+export function imageSet(src: string, widths: number[]) {
+  return widths.map((width) => `${imageSrc(src, width)} ${width}w`).join(', ')
+}

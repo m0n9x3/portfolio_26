@@ -15,7 +15,9 @@ function ScrollManager() {
   const { pathname, hash } = useLocation()
   useEffect(() => {
     if (hash) {
-      const target = document.querySelector(hash)
+      /* getElementById 로 찾는다 — '#1' 처럼 숫자로 시작하는 해시는
+         querySelector 에서 selector 문법 오류를 던진다. */
+      const target = document.getElementById(decodeURIComponent(hash.slice(1)))
       if (target) {
         window.setTimeout(() => target.scrollIntoView({ behavior: 'smooth' }), 50)
         return

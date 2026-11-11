@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@import '@fontsource-variable/noto-serif-kr';
 @import '@fontsource/lobster';
 
 /* Pretendard, self-hosted so the site has no CDN dependency at render time.
@@ -12,14 +11,22 @@
   font-display: swap;
 }
 
+/* swap 으로 시스템 서체가 먼저 그려지는 동안, 그 대체 서체의 줄 박스를 실제
+   Pretendard 와 같게 강제한다. 값은 개발 서버 페이지에서 canvas
+   measureText 의 fontBoundingBox 로 잰 것(100px 기준 ascent 95 / descent 24).
+   이게 없으면 2MB 폰트가 도착하는 순간 모든 문단이 세로로 밀린다(CLS). */
+@font-face {
+  font-family: 'Pretendard Fallback';
+  src: local('Segoe UI'), local('Helvetica Neue'), local('Arial');
+  ascent-override: 95%;
+  descent-override: 24%;
+  line-gap-override: 0%;
+}
+
 @theme {
-  --font-sans: 'Pretendard Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: 'Pretendard Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-suit: 'Pretendard Variable', ui-sans-serif, system-ui, sans-serif;
-  /* The one deliberate exception: "My Life" in the hero, set in a myeongjo.
-     Noto Serif KR carries the Korean myeongjo look; it has no true italic, so
-     the type stands upright instead of getting a synthetic slant. */
-  --font-serif-display: 'Noto Serif KR Variable', ui-serif, Georgia, 'Times New Roman', serif;
+  --font-sans: 'Pretendard Variable', 'Pretendard Fallback', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: 'Pretendard Variable', 'Pretendard Fallback', ui-sans-serif, system-ui, sans-serif;
+  --font-suit: 'Pretendard Variable', 'Pretendard Fallback', ui-sans-serif, system-ui, sans-serif;
   /* 랍스터: Work 섹션 인트로와 What I do 제목의 손글씨. 폭이 넓어 같은
      크기면 화면을 넘기므로 쓰는 곳에서 크기를 따로 정한다. */
   --font-script: 'Lobster', ui-serif, Georgia, 'Times New Roman', serif;
@@ -115,6 +122,21 @@
   label {
     letter-spacing: -0.03em;
     line-height: 1.5;
+  }
+  /* 모바일·태블릿은 화면이 좁아 같은 줄간이면 글자가 빽빽하게 몰린다.
+     스크롤할 때 한 호흡씩 읽히도록 줄간을 넓혀 둔다(데스크톱은 그대로). */
+  @media (max-width: 1023px) {
+    p,
+    li,
+    dd,
+    dt,
+    figcaption,
+    blockquote,
+    textarea,
+    input,
+    label {
+      line-height: 1.68;
+    }
   }
   h1,
   h2,
@@ -305,7 +327,23 @@
 .statement-word:hover .statement-pop {
   opacity: 1;
   transform: translateY(0);
+  /* Hoverable — 포인터를 카드 위로 옮겨도 닫히지 않는다(WCAG 1.4.13). */
+  pointer-events: auto;
 }
+
+/* Escape 로 닫은 동안은 관심이 남아 있어도 열지 않는다(Dismissible).
+   포인터가 움직이면 다시 열린다. */
+[data-dismissed] .statement-word .statement-pop {
+  opacity: 0;
+  transform: translateY(4px);
+  pointer-events: none;
+}
+
+/* 창 밖으로 나가는 팝오버는 JS가 단어마다 좌/우를 재서 [data-clamp]로
+   기준 모서리를 뒤집는다. 앵커 포지셔닝(position-area + flip-inline)도
+   시도했지만, top layer 가 아닌 absolute 요소에서는 flip 이 뷰포트가 아니라
+   앵커의 컨테이닝 블록을 기준으로 판단한다 — 320~390px 에서 팝오버가
+   페이지 폭을 99~125px 늘렸다(실측). 그래서 여기서는 쓰지 않는다. */
 
 /* Once the WebGL water pass owns the type it paints every glyph itself, so
    the DOM copy goes transparent and lives only for selection and assistive
@@ -758,7 +796,12 @@ html[data-glass-cursor='on'] .glass-cursor { display: block; }
   border-bottom: 2px solid rgb(15 47 104 / 0.35);
   border-radius: 8px;
   cursor: default;
-  outline: none;
+  /* 실제 <button> 이므로 브라우저 기본 베벨만 끄고, 포커스 링은
+     전역 :focus-visible 규칙에 맡긴다(예전에는 outline:none 으로 지웠다). */
+  appearance: none;
+  /* 칩이 본문 줄 상자보다 커지면 윗줄·아랫줄 글자를 파고든다. 안쪽 줄높이를
+     낮춰 칩 높이를 본문 line-height 안에 맞춘다. */
+  line-height: 1.35;
   background: rgb(255 255 255 / 0.45);
   transition: border-color 160ms ease, background 160ms ease;
 }
@@ -819,8 +862,11 @@ html[data-glass-cursor='on'] .glass-cursor { display: block; }
   opacity: 0.45;
 }
 
-.tool-pop:hover .tool-popover,
-.tool-pop:focus-visible .tool-popover {
+/* 열림 상태는 컴포넌트가 소유한다 — 호버·포커스·탭, 그리고 Escape 로
+   닫힌 상태를 모두 같은 곳에서 판단한다. pointer-events:auto 는 WCAG
+   1.4.13 의 Hoverable 요구(포인터를 내용 위로 옮길 수 있어야 한다). */
+.tool-pop[data-shown] .tool-popover {
   opacity: 1;
   transform: translateY(0);
+  pointer-events: auto;
 }

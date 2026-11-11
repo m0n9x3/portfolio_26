@@ -61,7 +61,28 @@ export function Statement() {
   const panel = useRef<HTMLElement>(null)
   const text = useRef<HTMLDivElement>(null)
   const canvas = useRef<HTMLCanvasElement>(null)
-  const [reduced] = useState(prefersReduced)    /* Writing: a character takes its ink as the scroll passes it, and a boxed word
+  const [reduced] = useState(prefersReduced)
+
+  /* WCAG 1.4.13 Dismissible — Escape 로 닫고, 관심이 남아 있는 동안은
+     닫힌 채로 두다가 포인터가 다시 움직이면 연다. */
+  const [dismissed, setDismissed] = useState(false)
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setDismissed(true)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  useEffect(() => {
+    if (!dismissed) return
+    const reopen = () => setDismissed(false)
+    window.addEventListener('pointermove', reopen, { once: true })
+    return () => window.removeEventListener('pointermove', reopen)
+  }, [dismissed])
+
+  /* Writing: a character takes its ink as the scroll passes it, and a boxed word
        flips the moment its last glyph has been written, so the box lands on a
        word that is already fully inked. The writing finishes by the pin's 80%
        mark, so the last 20% of the pin is a calm tail to read the text. */
@@ -224,10 +245,21 @@ export function Statement() {
           <h2 id="statement-title" className="sr-only">
             {FULL_TEXT}
           </h2>
+          {/* 호버로만 볼 수 있던 해설을 스크린리더에도 제공한다. 아래 글리프는
+              장식(aria-hidden)이라, 이 목록이 없으면 이 내용은 아예 읽히지 않는다. */}
+          <dl className="sr-only">
+            {Object.entries(POPOVERS).map(([word, text]) => (
+              <div key={word}>
+                <dt>{word}</dt>
+                <dd>{text}</dd>
+              </div>
+            ))}
+          </dl>
           {/* break-keep: Korean wraps at spaces, never mid-word. */}
           <div
             ref={text}
             aria-hidden
+            data-dismissed={dismissed ? '' : undefined}
             className="break-keep text-balance text-[20px] font-normal leading-[1.5] tracking-[-0.03em] sm:text-[26px] lg:text-[34px]"
           >
             {TEXT.stanzas.map((stanza, si) => (

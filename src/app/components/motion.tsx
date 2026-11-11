@@ -127,11 +127,19 @@ export function Parallax({
   alt,
   className,
   strength = 8,
+  srcSet,
+  sizes,
+  width,
+  height,
 }: {
   src: string
   alt: string
   className?: string
   strength?: number
+  srcSet?: string
+  sizes?: string
+  width?: number
+  height?: number
 }) {
   const ref = useRef<HTMLDivElement>(null)
 
@@ -164,7 +172,17 @@ export function Parallax({
 
   return (
     <div ref={ref} className={cx('image-frame relative', className)}>
-      <img src={src} alt={alt} className="absolute inset-0 size-full scale-[1.12] object-cover" loading="lazy" />
+      <img
+        src={src}
+        srcSet={srcSet}
+        sizes={sizes}
+        width={width}
+        height={height}
+        alt={alt}
+        className="absolute inset-0 size-full scale-[1.12] object-cover"
+        loading="lazy"
+        decoding="async"
+      />
     </div>
   )
 }

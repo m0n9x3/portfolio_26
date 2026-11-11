@@ -1,5 +1,5 @@
 import { ArrowUpRight } from 'lucide-react'
-import { asset } from '../lib/asset'
+import { asset, imageSet, imageSrc } from '../lib/asset'
 import { useEffect, useRef, useState } from 'react'
 
 import { site } from '../../data/site'
@@ -112,33 +112,42 @@ export function Home() {
         <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-20">
           <Reveal>
             <FigmaSelect className="mx-auto max-w-[460px]" label="Profile.jpg" radius="28px">
-              <Parallax src={asset('/images/portrait.jpg')} alt={site.name} className="aspect-[3/4] rounded-image" strength={6} />
+              <Parallax
+                src={imageSrc(asset('/images/portrait.jpg'), 960)}
+                srcSet={imageSet(asset('/images/portrait.jpg'), [480, 960])}
+                sizes="(min-width: 1024px) 460px, 90vw"
+                width={960}
+                height={1280}
+                alt={site.name}
+                className="aspect-[3/4] rounded-image"
+                strength={6}
+              />
             </FigmaSelect>
           </Reveal>
           <div className="flex flex-col justify-center">
             <Lines
               as="h2"
-              className="font-display text-balance text-[24px]"
+              className="font-display text-balance text-[22px] sm:text-[24px]"
               lines={['상상하고, 구체화하고 구현합니다.']}
             />
-            <Reveal delay={0.2} className="relative z-10 mt-8 max-w-xl text-pretty text-[18px] leading-relaxed text-muted">
+            <Reveal delay={0.2} className="relative z-10 mt-8 max-w-xl text-pretty text-[17px] leading-[1.7] text-muted sm:text-[18px] sm:leading-relaxed">
               <div ref={copyRef}>
                 <p>
                   안녕하세요, 최영재입니다.
                   <br />
                   상상을 구현하는 것을 즐거워했고, 여전히 즐거워하며 작업해요.
                 </p>
-                <p className="relative mt-4">
+                <p className="relative mt-5 sm:mt-4">
                   <ToolPop word="디자인" items={PROFILE_TOOLS.design} />을 섬세하게 다루고,
                   <br />
                   다양한 환경에서의 <ToolPop word="프론트 작업" items={PROFILE_TOOLS.front} />을 접근성과 웹표준을 고려해 능숙하게 할 수 있어요.
                 </p>
-                <p className="relative mt-4">
+                <p className="relative mt-5 sm:mt-4">
                   <ToolPop word="개발 지식" items={PROFILE_TOOLS.dev} />이 있어 개발자와의 협업에도 능한 편이고,
                   <br />
                   AI를 수준급으로 다룰 수 있어요.
                 </p>
-                <p className="relative mt-4">
+                <p className="relative mt-5 sm:mt-4">
                   UX 에 관심이 많아 사용자를 생각한 섬세한 작업을 하는 것을 좋아해요.
                   <br />
                   다양한 사람들과 함께 상상을 현실로 만들어 가려고 해요.
@@ -159,7 +168,7 @@ export function Home() {
       <Florilegium />
 
       {/* Services */}
-      <section className="mx-auto max-w-[1400px] px-5 pt-32 sm:px-8 sm:pt-44">
+      <section className="mx-auto max-w-[1400px] px-5 pt-36 sm:px-8 sm:pt-44">
         <div className="grid gap-10 lg:grid-cols-[1fr_2fr] lg:gap-20">
           <div>
             <Lines as="h2" className="font-script text-[36px] leading-[1.2] sm:text-[52px]" lines={['& ...Work!']} />
@@ -272,7 +281,9 @@ function Services() {
           {CREDITS.map((row, i) => (
             <img
               key={row.title}
-              src={row.image}
+              src={imageSrc(row.image, 1100)}
+              srcSet={imageSet(row.image, [480, 1100])}
+              sizes="260px"
               alt=""
               draggable={false}
               className={cx('absolute inset-0 size-full object-cover transition-opacity duration-300', active === i ? 'opacity-100' : 'opacity-0')}

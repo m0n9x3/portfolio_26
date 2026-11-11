@@ -4,7 +4,7 @@
    마지막에 강아지 사진이 뜨고 그 둘레에 문장이 붙는다. 등장은 뷰포트에
    들어올 때 한 번만 켜고, 모션 최소화 설정에서는 바로 정착 상태로 그린다. */
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
-import { asset } from '../lib/asset'
+import { asset, imageSet, imageSrc } from '../lib/asset'
 
 import { prefersReduced } from '../lib/reduced'
 import './finale.css'
@@ -151,12 +151,18 @@ function Dog({ vw }: { vw: number }) {
     >
       <div className="-translate-x-1/2">
         <div className="fin-sway" style={{ animationDuration: `${base.sway}ms` }}>
-          <img
-              src={asset('/images/ganadi.gif')}
-              alt=""
+          {/* 1.2MB 짜리 GIF 대신 같은 루프를 MP4 로 — 화면 결과는 같고
+              32KB 다. 장식이라 소리·자막·컨트롤은 없다. */}
+            <video
+              src={asset('/images/ganadi.mp4')}
               width={200}
               height={200}
+              autoPlay
+              loop
+              muted
+              playsInline
               draggable={false}
+              aria-hidden
               className="block w-[min(200px,46vw)] select-none"
             />
         </div>
@@ -261,10 +267,13 @@ export function Footer() {
         {/* 그림자는 감싼 상자에 준다 — 팩의 블러 인(filter)이 상쇄되지 않게. */}
         <div className="fin-bag-cast w-fit">
           <img
-            src={asset('/images/iv-bag.webp')}
+            src={imageSrc(asset('/images/iv-bag.webp'), 800)}
+            srcSet={imageSet(asset('/images/iv-bag.webp'), [400, 800])}
+            sizes="396px"
             alt=""
             width={780}
             height={1326}
+            decoding="async"
             draggable={false}
             className="fin-bag block w-[min(67vw,396px)] select-none"
           />

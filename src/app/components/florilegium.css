@@ -1,7 +1,6 @@
 /* WORK 경험 타임라인 — 피셔아이 스트립 + 날짜 레인지.
    사이트의 @theme 토큰을 그대로 쓰는 섹션. 클래스는 전부 fl- 접두사.
    배경색 없음 — 페이지 배경(#eef5f6)이 그대로 보인다. */
-@import '@fontsource/lobster';
 :root {
   --fl-ink: var(--color-fg);
   --fl-ink-soft: color-mix(in srgb, var(--color-fg) 55%, transparent);
@@ -12,7 +11,7 @@
   --fl-mono: var(--font-sans);
 }
 
-.fl-root { margin-top: clamp(120px, 16vw, 240px); }
+.fl-root { margin-top: clamp(140px, 18vw, 240px); }
 .fl-track { position: relative; }
 /* 섹션 전체는 스크롤에 묶여 페이드 인한다(프레임 루프가 .fl-root 의
    opacity 를 직접 맞춘다). 그 안의 물은 항상 칠해져 있고, 앞 단계만

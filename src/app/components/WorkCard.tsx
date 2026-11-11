@@ -2,6 +2,7 @@ import { animate } from 'animejs'
 import { useRef, useState } from 'react'
 
 import type { Project } from '../../data/site'
+import { imageSet, imageSrc } from '../lib/asset'
 import { cx } from '../lib/cx'
 import { prefersReduced } from '../lib/reduced'
 import { Parallax, useInViewOnce } from './motion'
@@ -59,7 +60,16 @@ export function WorkCard({ project, index = 0 }: { project: Project; index?: num
       >
         <div className={cx('relative overflow-hidden rounded-image', project.size === 'large' ? 'aspect-[16/10]' : 'aspect-[4/5] md:aspect-[4/4.6]')} style={{ background: project.tint }}>
           <div className="absolute inset-0 transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]">
-            <Parallax src={project.cover} alt={project.title} className="size-full" strength={6} />
+            <Parallax
+              src={imageSrc(project.cover, 1100)}
+              srcSet={imageSet(project.cover, [480, 1100])}
+              sizes={project.size === 'large' ? '(min-width: 768px) 66vw, 100vw' : '(min-width: 768px) 33vw, 100vw'}
+              width={1100}
+              height={825}
+              alt={project.title}
+              className="size-full"
+              strength={6}
+            />
           </div>
           <span
             ref={label}
