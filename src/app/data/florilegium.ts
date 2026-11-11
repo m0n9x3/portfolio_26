@@ -13,8 +13,19 @@ export type Plate = {
   /* 보여 줄 날짜(YYYY-MM-DD). 없으면 71일 간격 그리드를 쓴다. 날짜는 판 사이를
      보간하므로 앞뒤 판보다 늦어야 한다(오름차순). */
   date?: string
-  /* 판을 클릭해 열리는 설명 모달의 문단들. 없으면 날짜・제목만 보인다. */
-  desc?: string[]
+  /* 판을 클릭하면 열리는 문서형 상세. 없으면 날짜・제목・캡션만 나온다. */
+  detail?: {
+    /* 문서 좌측 썸네일. 없으면 판 이미지를 쓴다. */
+    thumb?: string
+    /* 제목 아래 작업 범위 */
+    meta: string
+    /* 썸네일 옆 소개 문단 */
+    intro: string[]
+    /* 앱 화면 슬라이드(세로 9:16) */
+    slides?: string[]
+    /* 문서 아래 2단 문단 */
+    columns?: string[]
+  }
 }
 
 /* 틴트는 사이트 팔레트의 쿨한 아쿠아 래더(surface-2 / line / bg / fg)로
@@ -29,9 +40,24 @@ export const PLATES: Plate[] = [
     tint: '#e3eef0',
     still: true,
     date: '2022-07-21',
-    desc: [
-      '크라우드 리워드 앱 MORAZO의 키비주얼입니다. 보라색 원형 캐릭터와 굵은 워드마크로 브랜드의 인상을 만들고, 흰 바탕에 여백을 넉넉히 두어 앱 화면과 인쇄물 어디에나 얹을 수 있게 했습니다.',
-    ],
+    detail: {
+      thumb: asset('/images/morajo/detail.webp'),
+      meta: 'BRANDING / PROMOTION DESIGN',
+      intro: [
+        '우주 최초 크라우드 리워드 앱! 모라조의 리브랜딩과 프로모션 디자인을 진행했습니다. 출시 전의 앱이었으나, 기존의 디자인이 브랜딩이 부족한 점에 브랜딩 위주의 개편 작업을 진행했습니다.',
+        '바리에이션 하기 좋은 동글동글, 귀여운 캐릭터를 이용해서 다양한 일러스트를 컨셉츄얼하게 사용해 각인효과와 친근함, 편안함을 유도하였습니다.',
+      ],
+      slides: [
+        asset('/images/morajo/slide-1.webp'),
+        asset('/images/morajo/slide-2.webp'),
+        asset('/images/morajo/slide-3.webp'),
+        asset('/images/morajo/slide-4.webp'),
+      ],
+      columns: [
+        '모라조의 메인 컬러인 보라색과 [뭉치면 터진다]에서 생각한 포도알에서부터 시작한 디자인입니다. 소소한 표정 변화만으로 오밀조밀하고 귀여운, 친근한 느낌을 만들었습니다.',
+        '컨셉츄얼한 느낌을 주기 위해 극도로 절제하며 색을 사용하였습니다. 기쁘게도 수제 작업한 (...) 일러스트와 시너지가 되어 유니크한 스타일로 작업할 수 있었습니다.',
+      ],
+    },
   },
   { src: asset('/images/florilegium/stem-04.webp'), title: 'Peony, half asleep', note: 'Study', tint: '#0f2a2d' },
   { src: asset('/images/florilegium/stem-05.webp'), title: 'Poppy, in grey', note: 'Hallway', tint: '#f7fbfb' },

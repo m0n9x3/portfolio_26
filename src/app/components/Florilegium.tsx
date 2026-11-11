@@ -12,6 +12,8 @@ import { X } from 'lucide-react'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import 'swiper/css'
 
 import { PLATES, PLATE_DAYS, fmtCalendar, fmtDate } from '../data/florilegium'
 
@@ -830,9 +832,16 @@ export function Florilegium() {
   )
 }
 
-/* 판을 클릭하면 열리는 설명 모달. 이미지・날짜・제목・설명을 한 패널에 둔다. */
+/* 판을 클릭하면 열리는 문서형 상세. 넓은 화면에서 좌우로 펼친 한 장의
+   문서처럼 읽히도록 썸네일+소개, 앱 화면, 2단 문단 순서로 쌓는다. */
 function PlateModal({ index, onClose }: { index: number; onClose: () => void }) {
   const plate = PLATES[index]
+  const detail = plate.detail
+
+  /* 내용은 모달이 열린 뒤에야 만든다 — 갤러리 단계에서는 상세 이미지를
+     하나도 요청하지 않고, 열리면 진행률을 채우며 받아 온다. */
+  const [progress, setProgress] = useState(0)
+  const [ready, setReady] = useState(false)
 
   /* 뒤 페이지가 같이 스크롤되지 않게 잠그고, 스크롤바가 사라진 폭만큼 오른쪽을
      채워 화면이 옆으로 흔들리지 않게 한다. Esc 로도 닫힌다. */
@@ -853,31 +862,129 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
     }
   }, [onClose])
 
+  /* 이미지가 도착한 비율까지만 숫자를 올린다. 캐시에 있어도 0에서 100까지
+     한 번은 흐르도록 최소 0.5초를 함께 본다. */
+  useEffect(() => {
+    const srcs = [detail?.thumb ?? plate.src, ...(detail?.slides ?? [])]
+    const total = Math.max(1, srcs.length)
+    let alive = true
+    let done = 0
+    let shown = 0
+    const startedAt = performance.now()
+
+    const images = srcs.map((src) => {
+      const img = new Image()
+      img.onload = () => { done += 1 }
+      img.onerror = () => { done += 1 }
+      img.src = src
+      return img
+    })
+
+    const timer = window.setInterval(() => {
+      if (!alive) return
+      const goal = Math.min(done / total, (performance.now() - startedAt) / 520)
+      shown = Math.max(shown, goal)
+      setProgress(shown)
+      if (done === total && shown > 0.995) {
+        window.clearInterval(timer)
+        setProgress(1)
+        setReady(true)
+      }
+    }, 40)
+
+    return () => {
+      alive = false
+      window.clearInterval(timer)
+      images.forEach((img) => {
+        img.onload = null
+        img.onerror = null
+      })
+    }
+  }, [detail, plate.src])
+
   return (
     <div className="fl-modal" role="presentation" onClick={onClose}>
       <div
-        className="fl-modal__panel"
+        className="fl-modal__frame"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="fl-modal-title"
+        aria-labelledby={ready ? 'fl-modal-title' : undefined}
+        aria-label={ready ? undefined : '작업 상세'}
         onClick={(event) => event.stopPropagation()}
       >
         <button type="button" className="fl-modal__close" onClick={onClose} aria-label="닫기" autoFocus>
-          <X className="size-4" strokeWidth={1.6} />
+          <X className="size-5" strokeWidth={1.4} />
         </button>
 
-        <div className="fl-modal__figure" style={{ background: plate.tint }}>
-          <img src={plate.src} alt="" draggable={false} />
-        </div>
+        <article className={`fl-modal__sheet${ready ? ' is-ready' : ' is-loading'}`}>
+          {!ready && (
+            <div className="fl-modal__loading" role="status" aria-live="polite">
+              <span className="fl-modal__loading-label">LOADING</span>
+              <span className="fl-modal__loading-count">
+                {String(Math.round(progress * 100)).padStart(3, '0')}%
+              </span>
+            </div>
+          )}
 
-        <div className="fl-modal__body">
-          <p className="fl-modal__date">{fmtDate(PLATE_DAYS[index])}</p>
-          <h3 id="fl-modal-title" className="fl-modal__title">{plate.title}</h3>
-          <p className="fl-modal__note">{plate.note}</p>
-          {plate.desc?.map((line) => (
-            <p key={line} className="fl-modal__desc">{line}</p>
-          ))}
-        </div>
+          {ready && (
+            <>
+              <header className="fl-modal__head">
+                <figure className="fl-modal__thumb" style={{ background: plate.tint }}>
+                  <img src={detail?.thumb ?? plate.src} alt="" draggable={false} />
+                </figure>
+
+                <div className="fl-modal__text">
+                  <p className="fl-modal__kicker">WORK: DETAIL</p>
+                  <h3 id="fl-modal-title" className="fl-modal__title">{plate.title}</h3>
+                  <div className="fl-modal__meta">
+                    <span>{detail?.meta ?? plate.note}</span>
+                    <span>{fmtDate(PLATE_DAYS[index])}</span>
+                  </div>
+                  {detail && (
+                    <div className="fl-modal__intro">
+                      {detail.intro.map((line) => (
+                        <p key={line}>{line}</p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </header>
+
+              {detail?.slides && (
+                <section className="fl-modal__section" aria-label="앱 화면">
+                  {/* 3.5장이 보이고 남은 한 장은 끌어서 넘긴다. 좁은 화면에서는
+                      1.2장 — 다음 장이 살짝 걸쳐 넘길 수 있다는 걸 알린다. */}
+                  <Swiper
+                    className="fl-modal__slides"
+                    slidesPerView={3.5}
+                    spaceBetween={18}
+                    breakpoints={{
+                      0: { slidesPerView: 1.2, spaceBetween: 10 },
+                      760: { slidesPerView: 3.5, spaceBetween: 18 },
+                    }}
+                    grabCursor
+                  >
+                    {detail.slides.map((src, i) => (
+                      <SwiperSlide key={src} className="fl-modal__slide">
+                        <img src={src} alt={`${plate.title} 화면 ${i + 1}`} draggable={false} />
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+                </section>
+              )}
+
+              {detail?.columns && (
+                <section className="fl-modal__section">
+                  <div className="fl-modal__cols">
+                    {detail.columns.map((line) => (
+                      <p key={line}>{line}</p>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </>
+          )}
+        </article>
       </div>
     </div>
   )
