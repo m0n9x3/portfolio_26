@@ -1093,8 +1093,8 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
               {detail?.columns && (
                 <section className="fl-modal__section">
                   <div className="fl-modal__cols">
-                    {detail.columns.map((line) => (
-                      <p key={line} style={detail.columns.length === 1 ? { gridColumn: '1 / -1' } : undefined}>{line}</p>
+                    {detail.columns.map((line, _, columns) => (
+                      <p key={line} style={columns.length === 1 ? { gridColumn: '1 / -1' } : undefined}>{line}</p>
                     ))}
                   </div>
                 </section>
