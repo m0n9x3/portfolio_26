@@ -2,6 +2,11 @@
    좌우는 헤더와 같은 박스(max-width 1400px, 안쪽 여백 14px / 32px)를 쓴다.
    최소 2초를 채운 뒤, 판 전체가 흐려지며 히어로가 드러난다. */
 
+html.preloading {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+
 .pre {
   position: fixed;
   inset: 0;
@@ -15,16 +20,60 @@
   color: #022016;
   pointer-events: none;
   user-select: none;
-  transition:
-    opacity 720ms ease 60ms,
-    filter 720ms ease 60ms;
-  will-change: opacity, filter;
+  will-change: opacity;
 }
 
-/* 판이 흐려지며 히어로가 드러난다. */
+/* 여러 물감 자국이 번져 서로 만나며 아래 화면을 드러낸다. */
+.pre-watercolor-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
 .pre.is-leaving {
-  opacity: 0;
-  filter: blur(14px);
+  -webkit-mask-image: url(#pre-watercolor-mask);
+  mask-image: url(#pre-watercolor-mask);
+  animation: pre-watercolor-out 1800ms linear forwards;
+}
+
+.pre-ink {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(0);
+}
+
+.pre.is-leaving .pre-ink {
+  animation: pre-ink-spread 1670ms cubic-bezier(.42, 0, .58, 1) forwards;
+}
+
+.pre.is-leaving .pre-ink--two { animation-delay: 96ms; }
+.pre.is-leaving .pre-ink--three { animation-delay: 130ms; }
+
+@keyframes pre-ink-spread {
+  to { transform: scale(2.2); }
+}
+
+@keyframes pre-watercolor-out {
+  0%, 55% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.pre-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgb(2 32 22 / 0.3);
+  font-size: clamp(15px, 1.1vw, 17px);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.pre-message-fill {
+  position: absolute;
+  inset: 0;
+  color: #022016;
+  clip-path: inset(0 calc(100% - var(--progress)) 0 0);
 }
 
 /* 헤더의 컨테이너와 같은 상자 — mx-auto, max-w-[1400px], px-3.5 sm:px-8.

@@ -374,6 +374,7 @@ export function createWaterScene(
   const allocate = (w: number, h: number) => {
     field = createField(w, h)
     bytes = new Uint8Array(w * h)
+    gl.activeTexture(gl.TEXTURE0)
     gl.bindTexture(gl.TEXTURE_2D, texture)
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, w, h, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, bytes)
     gl.uniform2f(uTexel, 1 / w, 1 / h)

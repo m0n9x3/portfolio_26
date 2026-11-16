@@ -21,6 +21,10 @@ export type Plate = {
     meta: string
     /* 썸네일 옆 소개 문단 */
     intro: string[]
+    /* 문서 전체 너비 이미지 */
+    image?: string
+    video?: string
+    videoText?: string
     /* 앱 화면 슬라이드(세로 9:16) */
     slides?: string[]
     /* 문서 아래 2단 문단 */
@@ -32,7 +36,29 @@ export type Plate = {
    맞춘 값들이다. */
 export const PLATES: Plate[] = [
   { src: asset('/images/florilegium/stem-02.webp'), title: 'Jasmine before breakfast', note: 'Kitchen table', tint: '#2f4a4f' },
-  { src: asset('/images/florilegium/stem-03.webp'), title: 'Cosmos in the stairwell', note: 'Landing', tint: '#d9e6e8' },
+  {
+    src: asset('/images/portfolio-v1/thumb.jpg'),
+    title: 'DE:SIGN MY LIFE v1',
+    note: 'UI,UX DESIGN / PUBLISHING',
+    tint: '#d9e6e8',
+    still: true,
+    date: '2022-05-20',
+    detail: {
+      meta: 'UI,UX DESIGN / PUBLISHING',
+      intro: [
+        '첫번째 포트폴리오 웹입니다.',
+        '트랜디하고 감각적인 디자인, 쫀득한 인터렉션, 편하게 볼 수 있고 직관적인 디자인을 목표로 제작되었습니다.',
+        '하늘에 흐려지는듯한 히어로 섹션과, 모던한 레이아웃과 디자인 사이에서 과감하지만 절제된 색사용에 긍정적인 평가를 많이 받았던 작업물입니다.',
+      ],
+      image: asset('/images/portfolio-v1/detail.jpg'),
+      video: asset('/images/portfolio-v1/interaction.mp4'),
+      videoText: '히어로 섹션에서 은은하고 부드럽게 시작했지만, 이후의 인터렉션은 쫀득-한 느낌으로 진행해보고 싶었어요. 멈춘 웹은 죽었다고 생각하거든요. 정적인 웹은 만들고 싶지 않았어요. 그래서 스크롤스파이를 이용해서 스크롤에 따라 약간의 반동을 겸한 인터렉션을 삽입해 보았습니다. 배경이 덮이며 쫀득하게 나타나는 인터렉션을 제가 생각한대로 구현해서 너무 기뻤던 부분입니다! :)',
+      columns: [
+        '현재까지도 사용하는 DE:SIGN MY LIFE 라는 타이틀에 고려를 많이 했었습니다. \'삶을 디자인하다\' 라는 흔한 멘트로서도 보이지만, DE SIGN으로 "삶의 표지판을 세우다" 라는 의미로도 보이는걸 의도해봤어요.',
+        '색감이 좋다는 이야기를 많이 듣곤 합니다. 첫 인상부터 많은 인터렉션 등으로 사로잡기 보다는, 아련하고 감각적인 느낌으로 기억에 각인되어 보고 싶었어요. 탁한 빛의 하늘에 은은한 노을이 지는 느낌, 애니메이션에서밖에 못 볼 법한 하늘의 모습으로 첫 인상을 만들었습니다.',
+      ],
+    },
+  },
   {
     src: asset('/images/morajo-1100.webp'),
     title: '크라우드 리워드 앱 : 모라조',

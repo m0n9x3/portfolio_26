@@ -429,6 +429,8 @@
 .fl-modal__intro p { font-size: 16px; line-height: 1.72; color: var(--color-muted); text-wrap: pretty; }
 /* 첫 문단은 문서의 리드 — 한 단계 진한 잉크로 읽힌다. */
 .fl-modal__intro p:first-child { color: color-mix(in srgb, var(--color-fg) 82%, transparent); }
+.fl-modal__image { display: block; width: 100%; height: auto; }
+video.fl-modal__image + .fl-modal__cols { margin-top: clamp(20px, 3vw, 44px); }
 /* Swiper 루트 — 시트 폭을 그대로 쓰고 3.5장이 보이게 넘긴다. */
 .fl-modal__slides { min-width: 0; }
 /* 스크린샷은 흰 시트 위에서 얇은 외곽선으로 경계를 잡는다. */

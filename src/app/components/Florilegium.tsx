@@ -893,7 +893,7 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
   /* 이미지가 도착한 비율까지만 숫자를 올린다. 캐시에 있어도 0에서 100까지
      한 번은 흐르도록 최소 0.5초를 함께 본다. */
   useEffect(() => {
-    const srcs = [detail?.thumb ?? plate.src, ...(detail?.slides ?? [])]
+    const srcs = [detail?.thumb ?? plate.src, ...(detail?.image ? [detail.image] : []), ...(detail?.slides ?? [])]
     const total = Math.max(1, srcs.length)
     let alive = true
     let done = 0
@@ -984,6 +984,12 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
                 </div>
               </header>
 
+              {detail?.image && (
+                <section className="fl-modal__section">
+                  <img className="fl-modal__image" src={detail.image} alt={`${plate.title} 작업 이미지`} />
+                </section>
+              )}
+
               {detail?.slides && (
                 <section className="fl-modal__section fl-modal__gallery" aria-label="앱 화면">
                   <div className="fl-modal__viewport">
@@ -1056,6 +1062,13 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
                       <p key={line}>{line}</p>
                     ))}
                   </div>
+                </section>
+              )}
+
+              {detail?.video && (
+                <section className="fl-modal__section">
+                  <video className="fl-modal__image" src={detail.video} autoPlay muted loop playsInline aria-label={`${plate.title} 스크롤 인터렉션 영상`} />
+                  {detail.videoText && <div className="fl-modal__cols"><p style={{ gridColumn: '1 / -1' }}>{detail.videoText}</p></div>}
                 </section>
               )}
             </>
