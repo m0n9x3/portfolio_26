@@ -1,7 +1,5 @@
 import { asset } from '../lib/asset'
-/* WORK 경험 타임라인 — 열 개의 스톱.
-   사진은 public/images/ 와 public/images/florilegium/ 에 두었다(빌드 없이 URL로 서빙).
-   7번과 10번의 파일 스왑은 원본 구성: 다크 올리움이 마지막 스톱. */
+/* WORK 경험 타임라인. 이미지는 public/images/에서 서빙한다. */
 export type Plate = {
   src: string
   title: string
@@ -21,12 +19,18 @@ export type Plate = {
     meta: string
     /* 썸네일 옆 소개 문단 */
     intro: string[]
+    link?: string
+    linkLabel?: string
     /* 문서 전체 너비 이미지 */
     image?: string
     video?: string
     videoText?: string
+    bottomImage?: string
     /* 앱 화면 슬라이드(세로 9:16) */
     slides?: string[]
+    fullWidthSlides?: boolean
+    promotionSlides?: string[][]
+    promotionText?: string
     /* 문서 아래 2단 문단 */
     columns?: string[]
   }
@@ -35,7 +39,27 @@ export type Plate = {
 /* 틴트는 사이트 팔레트의 쿨한 아쿠아 래더(surface-2 / line / bg / fg)로
    맞춘 값들이다. */
 export const PLATES: Plate[] = [
-  { src: asset('/images/florilegium/stem-02.webp'), title: 'Jasmine before breakfast', note: 'Kitchen table', tint: '#2f4a4f' },
+  {
+    src: asset('/images/portfolio-2022/thumb.jpg'),
+    title: '22 UI/UX PORTFOLIO',
+    note: 'UI/UX DESIGN & GRAPHIC',
+    tint: '#2f4a4f',
+    still: true,
+    date: '2022-04-18',
+    detail: {
+      meta: 'UI/UX DESIGN & GRAPHIC',
+      intro: [
+        '2022년도의 UI/UX 디자인 및 그래픽 작업물을 총정리한 PDF를 디자인했습니다.',
+        '동글동글 귀엽고 플랫한 캐릭터와 트랜디한 디자인으로 주목도를 잡았고, 주객전도 되지 않도록 \'디자인을 보여준다\' 는 목적은 확실히 지키기 위해 노력해봤어요.',
+        '이건 다른 이야기지만, 인쇄물로도 사용했었는데.. 프린터 잉크를 너무너무 많이 사용해서 ^_ㅠ... 인쇄물의 배경색은 최대한 자제해야 한다는 배움을 받기도 했었던 작업입니다.',
+      ],
+      link: 'https://m0n9x3.kr/porfolio/pdf/2022_ui_ux.pdf',
+      linkLabel: '포트폴리오 PDF 보기 ↗',
+      slides: [asset('/images/portfolio-2022/page-1.jpg'), asset('/images/portfolio-2022/page-2.jpg')],
+      fullWidthSlides: true,
+      columns: ['검은 바탕에 네온 톤의 색 사용으로 확 이목을 끌었습니다. 가장 기억에 각인되도록 한 메인 캐릭터의 디자인에 사용된 색을 전체 디자인과 섹션별 컬러로도 사용함으로서 전체적으로 스토리가 이어지는 느낌을 주고 싶었어요.'],
+    },
+  },
   {
     src: asset('/images/portfolio-v1/thumb.jpg'),
     title: 'DE:SIGN MY LIFE v1',
@@ -50,8 +74,10 @@ export const PLATES: Plate[] = [
         '트랜디하고 감각적인 디자인, 쫀득한 인터렉션, 편하게 볼 수 있고 직관적인 디자인을 목표로 제작되었습니다.',
         '하늘에 흐려지는듯한 히어로 섹션과, 모던한 레이아웃과 디자인 사이에서 과감하지만 절제된 색사용에 긍정적인 평가를 많이 받았던 작업물입니다.',
       ],
+      link: 'https://m0n9x3.kr/porfolio/v1/',
       image: asset('/images/portfolio-v1/detail.jpg'),
       video: asset('/images/portfolio-v1/interaction.mp4'),
+      bottomImage: asset('/images/portfolio-v1/gal_pf.jpg'),
       videoText: '히어로 섹션에서 은은하고 부드럽게 시작했지만, 이후의 인터렉션은 쫀득-한 느낌으로 진행해보고 싶었어요. 멈춘 웹은 죽었다고 생각하거든요. 정적인 웹은 만들고 싶지 않았어요. 그래서 스크롤스파이를 이용해서 스크롤에 따라 약간의 반동을 겸한 인터렉션을 삽입해 보았습니다. 배경이 덮이며 쫀득하게 나타나는 인터렉션을 제가 생각한대로 구현해서 너무 기뻤던 부분입니다! :)',
       columns: [
         '현재까지도 사용하는 DE:SIGN MY LIFE 라는 타이틀에 고려를 많이 했었습니다. \'삶을 디자인하다\' 라는 흔한 멘트로서도 보이지만, DE SIGN으로 "삶의 표지판을 세우다" 라는 의미로도 보이는걸 의도해봤어요.',
@@ -85,15 +111,34 @@ export const PLATES: Plate[] = [
       ],
     },
   },
-  { src: asset('/images/florilegium/stem-04.webp'), title: 'Peony, half asleep', note: 'Study', tint: '#0f2a2d' },
-  { src: asset('/images/florilegium/stem-05.webp'), title: 'Poppy, in grey', note: 'Hallway', tint: '#f7fbfb' },
-  { src: asset('/images/florilegium/stem-06.webp'), title: 'Lily at noon', note: 'Garden room', tint: '#cfe0e3' },
-  // plate 7 — 유리잔 (스왑: stem-10.webp)
-  { src: asset('/images/florilegium/stem-10.webp'), title: 'A stem in glass', note: 'Bathroom sill', tint: '#eef5f6' },
-  { src: asset('/images/florilegium/stem-08.webp'), title: 'Anemone, again', note: 'Window, west', tint: '#d3e2e4' },
-  { src: asset('/images/florilegium/stem-09.webp'), title: 'Everlasting', note: 'Mantelpiece', tint: '#bed2d6' },
-  // plate 10 — 다크 올리움 (스왑: stem-07.webp)
-  { src: asset('/images/florilegium/stem-07.webp'), title: 'Allium after dark', note: 'Bedside', tint: '#0b1c1e', focus: '50% 68%' },
+  {
+    src: asset('/images/247-game/thumb.jpg'),
+    title: '247 GAME',
+    note: 'BRANDING, GAME DEVELOP, GAME UI/UX DESIGN, MOTION GRAPHIC DESIGN',
+    tint: '#0b1c1e',
+    still: true,
+    date: '2024-10-25',
+    detail: {
+      meta: 'BRANDING, GAME DEVELOP, GAME UI/UX DESIGN, MOTION GRAPHIC DESIGN',
+      intro: ['247 GAME의 브랜딩 및 인게임 UI/UX 디자인, 엔진 작업, 영상 디자인 등의 작업에 참여했습니다.'],
+      slides: [
+        asset('/images/247-game/slide-1.jpg'),
+        asset('/images/247-game/slide-2.gif'),
+        asset('/images/247-game/slide-3.png'),
+        asset('/images/247-game/slide-4.png'),
+      ],
+      fullWidthSlides: true,
+      promotionSlides: [
+        [asset('/images/247-game/store-earth-1.png'), asset('/images/247-game/store-earth-2.png'), asset('/images/247-game/store-casino-1.png'), asset('/images/247-game/store-casino-2.png')],
+        [asset('/images/247-game/promo-earth.webp'), asset('/images/247-game/promo-casino.webp')],
+      ],
+      promotionText: '프로모션 디자인도 진행하였으며, 관련해 영상도 제작하였습니다. 프로모션 디자인이나 프로모션 영상 양측 다 게임 내 리소스가 많은 편이 아니어서 별도 오브젝트를 제작하거나, 모션그래픽을 최대한 활용하며 작업했던 작업이었습니다. 타겟층이 확연하게 다른 두 게임이었기 때문에 작업하면서 스타일을 확실하게 바꿔보았는데, 목표한 타겟층에 어느정도 일치하게 작업물이 나온 것 같아 만족스러웠던 작업입니다.',
+      columns: [
+        '247GAME 의 브랜딩작업을 진행했습니다. 테크니컬/사이버펑크한 감성에 확장성을 위해 대중적인 느낌을 넣으며 작업했습니다. 실제로 247GAME 사는 블록버스터류의 케쥬얼 게임부터 우주테마의 게임이나 성인게임 등 다양한 컨셉의 게임을 작업했었던 게임 브랜드였습니다.',
+        '젊고 트랜디한 느낌을 주기 위해 과감한 네온컬러를 많이 사용했고, 그러면서 피곤함을 덜하기 위해 서브컬러로는 확고한 흰색을 채용해보았습니다. 결과적으로 과하게 화려하지 않으면서, 심플하며 테크니컬/사이버펑크한 느낌을 트랜디하게 줄 수 있게 구성이 가능했습니다.',
+      ],
+    },
+  },
 ]
 
 /* 날짜는 기본으로 71일 간격, 22.01.01 부터. 실제 날짜를 아는 판은 date 로

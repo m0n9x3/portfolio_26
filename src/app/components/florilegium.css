@@ -427,8 +427,6 @@
 .fl-modal__meta span:first-child { color: var(--color-fg); }
 .fl-modal__intro { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; max-width: 58ch; }
 .fl-modal__intro p { font-size: 16px; line-height: 1.72; color: var(--color-muted); text-wrap: pretty; }
-/* 첫 문단은 문서의 리드 — 한 단계 진한 잉크로 읽힌다. */
-.fl-modal__intro p:first-child { color: color-mix(in srgb, var(--color-fg) 82%, transparent); }
 .fl-modal__image { display: block; width: 100%; height: auto; }
 video.fl-modal__image + .fl-modal__cols { margin-top: clamp(20px, 3vw, 44px); }
 /* Swiper 루트 — 시트 폭을 그대로 쓰고 3.5장이 보이게 넘긴다. */
@@ -450,6 +448,11 @@ video.fl-modal__image + .fl-modal__cols { margin-top: clamp(20px, 3vw, 44px); }
   transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .fl-modal__slide:hover img { transform: scale(1.03); }
+.fl-modal__gallery--full .fl-modal__slide img { aspect-ratio: auto; }
+.fl-modal__gallery--full .fl-modal__slide:hover img { transform: none; }
+.fl-modal__gallery--247 .fl-modal__viewport { container-type: inline-size; }
+.fl-modal__gallery--247 .fl-modal__slide { width: max-content; }
+.fl-modal__gallery--247 .fl-modal__slide img { width: auto; max-width: none; height: calc(100cqw * 5 / 12); aspect-ratio: auto; }
 /* 화살표는 슬라이드 위에 떠 있고, 갈 곳이 없으면 자리에서 사라진다. */
 .fl-modal__viewport { position: relative; }
 .fl-modal__nav {

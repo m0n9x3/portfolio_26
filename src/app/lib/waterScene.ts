@@ -190,7 +190,7 @@ export type WaterSceneHandle = {
   dispose: () => void
   /* 'fallback' when WebGL was unavailable: nothing but the 2D drawing. */
   kind: 'webgl' | 'fallback'
-  /* Uploads the current layer (or title) and paints one frame. */
+  /* Marks the source layer dirty; reduced-motion scenes paint immediately. */
   draw: () => void
   /* One deliberate drop, in pool units (0..1). */
   pulse: (u?: number, v?: number, amp?: number) => void
@@ -369,6 +369,7 @@ export function createWaterScene(
   let tick = 0
   let onScreen = true
   let disposed = false
+  let sourceDirty = !!source
   let fallback: WaterSceneHandle | undefined
 
   const allocate = (w: number, h: number) => {
@@ -393,11 +394,12 @@ export function createWaterScene(
   }
 
   const uploadSource = () => {
-    if (!source) return
+    if (!source || !sourceDirty) return
     gl.activeTexture(gl.TEXTURE1)
     gl.bindTexture(gl.TEXTURE_2D, titleTexture)
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source)
     gl.activeTexture(gl.TEXTURE0)
+    sourceDirty = false
   }
 
   const draw = () => {
@@ -802,7 +804,10 @@ export function createWaterScene(
 
   return {
     kind: 'webgl',
-    draw,
+    draw() {
+      sourceDirty = !!source
+      if (reducedMotion) draw()
+    },
     pulse,
     repaint() {
       rasterRepaint?.()

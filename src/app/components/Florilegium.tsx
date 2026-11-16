@@ -833,6 +833,7 @@ export function Florilegium() {
 }
 
 type SwiperHandle = {
+  update: () => void
   slideNext: () => void
   slidePrev: () => void
   slideTo: (index: number) => void
@@ -840,6 +841,39 @@ type SwiperHandle = {
   isEnd: boolean
   activeIndex: number
   slides: { length: number }
+}
+
+function PromotionSlider({ slides, label }: { slides: string[]; label: string }) {
+  const swiperRef = useRef<SwiperHandle | null>(null)
+  const [active, setActive] = useState(0)
+  const [edges, setEdges] = useState({ prev: false, next: false })
+  const sync = (swiper: SwiperHandle) => {
+    setActive(swiper.isEnd ? slides.length - 1 : swiper.activeIndex)
+    setEdges({ prev: !swiper.isBeginning, next: !swiper.isEnd })
+  }
+
+  return (
+    <section className="fl-modal__section fl-modal__gallery fl-modal__gallery--247" aria-label={label}>
+      <div className="fl-modal__viewport">
+        <Swiper className="fl-modal__slides" slidesPerView="auto" spaceBetween={18} grabCursor
+          onSwiper={(swiper) => { swiperRef.current = swiper; sync(swiper) }} onSlideChange={sync} onResize={sync}>
+          {slides.map((src, i) => (
+            <SwiperSlide key={src} className="fl-modal__slide">
+              <img src={src} alt={`${label} ${i + 1}`} loading="lazy" onLoad={() => {
+                swiperRef.current?.update()
+                if (swiperRef.current) sync(swiperRef.current)
+              }} />
+            </SwiperSlide>
+          ))}
+        </Swiper>
+        <button type="button" className="fl-modal__nav fl-modal__nav--prev" onClick={() => swiperRef.current?.slidePrev()} disabled={!edges.prev} aria-label={`${label} 이전`}><ChevronLeft className="size-4" strokeWidth={1.6} /></button>
+        <button type="button" className="fl-modal__nav fl-modal__nav--next" onClick={() => swiperRef.current?.slideNext()} disabled={!edges.next} aria-label={`${label} 다음`}><ChevronRight className="size-4" strokeWidth={1.6} /></button>
+      </div>
+      <div className="fl-modal__dots">
+        {slides.map((src, i) => <button key={src} type="button" className={`fl-modal__dot${i === active ? ' is-active' : ''}`} onClick={() => swiperRef.current?.slideTo(i)} aria-label={`${label} ${i + 1}번째`} aria-current={i === active ? 'true' : undefined} />)}
+      </div>
+    </section>
+  )
 }
 
 /* 판을 클릭하면 열리는 문서형 상세. 넓은 화면에서 좌우로 펼친 한 장의
@@ -975,10 +1009,11 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
                     <span>{fmtDate(PLATE_DAYS[index])}</span>
                   </div>
                   {detail && (
-                    <div className="fl-modal__intro">
+                    <div className={`fl-modal__intro${detail.link ? ' fl-modal__intro--linked' : ''}`}>
                       {detail.intro.map((line) => (
                         <p key={line}>{line}</p>
                       ))}
+                      {detail.link && <a href={detail.link} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{detail.linkLabel ?? '포트폴리오 사이트 보기 ↗'}</a>}
                     </div>
                   )}
                 </div>
@@ -991,15 +1026,15 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
               )}
 
               {detail?.slides && (
-                <section className="fl-modal__section fl-modal__gallery" aria-label="앱 화면">
+                <section className={`fl-modal__section fl-modal__gallery${detail.fullWidthSlides ? ' fl-modal__gallery--full' : ''}${plate.title === '247 GAME' ? ' fl-modal__gallery--247' : ''}`} aria-label="작업 이미지 슬라이드">
                   <div className="fl-modal__viewport">
                     {/* 3.5장이 보이고 남은 한 장은 끌어서 넘긴다. 좁은 화면에서는
                         1.2장 — 다음 장이 살짝 걸쳐 넘길 수 있다는 걸 알린다. */}
                     <Swiper
                       className="fl-modal__slides"
-                      slidesPerView={3.5}
+                      slidesPerView={plate.title === '247 GAME' ? 'auto' : detail.fullWidthSlides ? 1 : 3.5}
                       spaceBetween={18}
-                      breakpoints={{
+                      breakpoints={detail.fullWidthSlides ? undefined : {
                         0: { slidesPerView: 1.2, spaceBetween: 10 },
                         760: { slidesPerView: 3.5, spaceBetween: 18 },
                       }}
@@ -1013,7 +1048,7 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
                     >
                       {detail.slides.map((src, i) => (
                         <SwiperSlide key={src} className="fl-modal__slide">
-                          <img src={src} alt={`${plate.title} 화면 ${i + 1}`} draggable={false} />
+                          <img src={src} alt={`${plate.title} 화면 ${i + 1}`} draggable={false} onLoad={plate.title === '247 GAME' ? () => swiperRef.current?.update() : undefined} />
                         </SwiperSlide>
                       ))}
                     </Swiper>
@@ -1059,16 +1094,27 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
                 <section className="fl-modal__section">
                   <div className="fl-modal__cols">
                     {detail.columns.map((line) => (
-                      <p key={line}>{line}</p>
+                      <p key={line} style={detail.columns.length === 1 ? { gridColumn: '1 / -1' } : undefined}>{line}</p>
                     ))}
                   </div>
                 </section>
               )}
 
+              {detail?.promotionSlides?.map((slides, group) => (
+                <PromotionSlider key={group} slides={slides} label={group === 0 ? '게임 스토어 이미지' : '게임 홍보 영상'} />
+              ))}
+              {detail?.promotionText && <section className="fl-modal__section"><div className="fl-modal__cols"><p style={{ gridColumn: '1 / -1' }}>{detail.promotionText}</p></div></section>}
+
               {detail?.video && (
                 <section className="fl-modal__section">
                   <video className="fl-modal__image" src={detail.video} autoPlay muted loop playsInline aria-label={`${plate.title} 스크롤 인터렉션 영상`} />
                   {detail.videoText && <div className="fl-modal__cols"><p style={{ gridColumn: '1 / -1' }}>{detail.videoText}</p></div>}
+                </section>
+              )}
+
+              {detail?.bottomImage && (
+                <section className="fl-modal__section">
+                  <img className="fl-modal__image" src={detail.bottomImage} alt={`${plate.title} 작업 이미지`} loading="lazy" />
                 </section>
               )}
             </>
