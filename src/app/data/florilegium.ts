@@ -1,6 +1,8 @@
 import { asset } from '../lib/asset'
 /* WORK 경험 타임라인. 이미지는 public/images/에서 서빙한다. */
 export type Plate = {
+  /* URL 공유 주소 — /?plate=<slug> 로 이 판의 상세를 바로 연다. */
+  slug: string
   src: string
   title: string
   note: string
@@ -46,6 +48,7 @@ export type Plate = {
    맞춘 값들이다. */
 export const PLATES: Plate[] = [
   {
+    slug: 'portfolio-2022',
     src: asset('/images/portfolio-2022/thumb.jpg'),
     title: '22 UI/UX PORTFOLIO',
     note: 'UI/UX DESIGN & GRAPHIC',
@@ -67,6 +70,7 @@ export const PLATES: Plate[] = [
     },
   },
   {
+    slug: 'design-my-life-v1',
     src: asset('/images/portfolio-v1/thumb.jpg'),
     title: 'DE:SIGN MY LIFE v1',
     note: 'UI,UX DESIGN / PUBLISHING',
@@ -92,6 +96,7 @@ export const PLATES: Plate[] = [
     },
   },
   {
+    slug: 'morajo',
     src: asset('/images/morajo-1100.webp'),
     title: '크라우드 리워드 앱 : 모라조',
     note: 'Brand keyvisual',
@@ -118,6 +123,7 @@ export const PLATES: Plate[] = [
     },
   },
   {
+    slug: 'moviechart',
     src: asset('/images/moviechart/thumb.jpg'),
     title: '영화를 만나다 : 무비차트',
     note: 'BRANDING, UI/UX DESIGN, PUBLISHING',
@@ -147,6 +153,7 @@ export const PLATES: Plate[] = [
     },
   },
   {
+    slug: '247-game',
     src: asset('/images/247-game/thumb.jpg'),
     title: '247 GAME',
     note: 'BRANDING, GAME DEVELOP, GAME UI/UX DESIGN, MOTION GRAPHIC DESIGN',

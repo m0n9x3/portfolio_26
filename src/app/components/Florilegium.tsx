@@ -12,10 +12,12 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
+import { useLocation, useNavigate } from 'react-router'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import 'swiper/css'
 
 import { PLATES, PLATE_DAYS, fmtCalendar, fmtDate } from '../data/florilegium'
+import { stillSet, stillSrc } from '../lib/asset'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -263,9 +265,34 @@ export function Florilegium() {
   }, [reduced])
 
   const [active, setActive] = useState(0)
-  /* 설명 모달로 열어 둔 판. null 이면 닫힌 상태. */
-  const [opened, setOpened] = useState<number | null>(null)
-  const closeModal = useCallback(() => setOpened(null), [])
+  /* 설명 모달로 열어 둔 판. 주소의 /work/<slug> 가 상태의 주인이라 링크
+     공유·뒤로가기·새 탭이 그대로 동작한다. */
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
+  /* 직접 열면 서버가 끝 슬래시를 붙여 넘기므로 떼고 본다. */
+  const openedSlug = pathname.startsWith('/work/')
+    ? decodeURIComponent(pathname.slice('/work/'.length)).replace(/\/+$/, '')
+    : ''
+  const openedAt = openedSlug ? PLATES.findIndex((p) => p.slug === openedSlug) : -1
+  const opened = openedAt >= 0 ? openedAt : null
+  /* 모달을 연 요소를 기억해 두었다가 닫을 때 포커스를 돌려준다. 모달이
+     붙는 순간에는 닫기 버튼이 이미 포커스를 가져가므로 그 전에 잡아 둔다. */
+  const openerRef = useRef<HTMLElement | null>(null)
+  const open = useCallback((i: number) => {
+    openerRef.current = document.activeElement as HTMLElement | null
+    navigate(`/work/${PLATES[i].slug}`)
+  }, [navigate])
+  /* 닫을 때는 기록을 쌓지 않는다 — 뒤로가기가 모달을 다시 열지 않게. */
+  const closeModal = useCallback(() => {
+    navigate('/', { replace: true })
+    const opener = openerRef.current
+    if (opener?.isConnected) window.setTimeout(() => opener.focus({ preventScroll: true }), 0)
+  }, [navigate])
+  /* 모달 안에서 ←/→ 로 옆 판으로 넘어간다. 주소만 바꿔 기록은 늘리지 않는다. */
+  const stepModal = useCallback((delta: number) => {
+    if (opened === null) return
+    navigate(`/work/${PLATES[(opened + delta + N) % N].slug}`, { replace: true })
+  }, [navigate, opened])
   const [loaded, setLoaded] = useState<boolean[]>(() => PLATES.map(() => false))
   const [failed, setFailed] = useState<boolean[]>(() => PLATES.map(() => false))
   const loadedCount = loaded.filter(Boolean).length + failed.filter(Boolean).length
@@ -751,7 +778,7 @@ export function Florilegium() {
                 key={active}
                 type="button"
                 className="fl-caption__title"
-                onClick={() => setOpened(active)}
+                onClick={() => open(active)}
               >
                 {plate.title}
               </button>
@@ -801,7 +828,7 @@ export function Florilegium() {
                 style={{ background: p.tint }}
                 aria-label={`${p.title}, ${p.note}`}
                 aria-current={i === active ? 'true' : undefined}
-                onClick={() => (i === active ? setOpened(i) : goTo(i))}
+                onClick={() => (i === active ? open(i) : goTo(i))}
               >
                 <span className="fl-card__clip">
                   {!failed[i] ? (
@@ -827,7 +854,7 @@ export function Florilegium() {
         </div>
       </section>
 
-      {opened !== null && createPortal(<PlateModal index={opened} onClose={closeModal} />, document.body)}
+      {opened !== null && createPortal(<PlateModal index={opened} onClose={closeModal} onStep={stepModal} />, document.body)}
     </div>
   )
 }
@@ -843,7 +870,7 @@ type SwiperHandle = {
   slides: { length: number }
 }
 
-function PromotionSlider({ slides, label, single = false, natural = false }: { slides: string[]; label: string; single?: boolean; natural?: boolean }) {
+function PromotionSlider({ slides, label, single = false, natural = false, sizes = '(min-width: 760px) 640px, 80vw' }: { slides: string[]; label: string; single?: boolean; natural?: boolean; sizes?: string }) {
   const swiperRef = useRef<SwiperHandle | null>(null)
   const [active, setActive] = useState(0)
   const [edges, setEdges] = useState({ prev: false, next: false })
@@ -859,7 +886,7 @@ function PromotionSlider({ slides, label, single = false, natural = false }: { s
           onSwiper={(swiper) => { swiperRef.current = swiper; sync(swiper) }} onSlideChange={sync} onResize={sync}>
           {slides.map((src, i) => (
             <SwiperSlide key={src} className="fl-modal__slide">
-              <img src={src} alt={`${label} ${i + 1}`} loading="lazy" onLoad={() => {
+              <img src={stillSrc(src)} srcSet={stillSet(src)} sizes={sizes} alt={`${label} ${i + 1}`} loading="lazy" onLoad={() => {
                 swiperRef.current?.update()
                 if (swiperRef.current) sync(swiperRef.current)
               }} />
@@ -878,9 +905,14 @@ function PromotionSlider({ slides, label, single = false, natural = false }: { s
 
 /* 판을 클릭하면 열리는 문서형 상세. 넓은 화면에서 좌우로 펼친 한 장의
    문서처럼 읽히도록 썸네일+소개, 앱 화면, 2단 문단 순서로 쌓는다. */
-function PlateModal({ index, onClose }: { index: number; onClose: () => void }) {
+function PlateModal({ index, onClose, onStep }: { index: number; onClose: () => void; onStep: (delta: number) => void }) {
   const plate = PLATES[index]
   const detail = plate.detail
+  const frameRef = useRef<HTMLDivElement>(null)
+  /* 옆 판 이동 핸들러는 ref 로 넘긴다 — 포커스·스크롤 잠금 효과가 판이
+     바뀔 때마다 다시 걸리며 포커스를 되돌리지 않게. */
+  const stepRef = useRef(onStep)
+  stepRef.current = onStep
 
   /* 내용은 모달이 열린 뒤에야 만든다 — 갤러리 단계에서는 상세 이미지를
      하나도 요청하지 않고, 열리면 진행률을 채우며 받아 온다. */
@@ -909,12 +941,29 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
      채워 화면이 옆으로 흔들리지 않게 한다. Esc 로도 닫힌다. */
   useEffect(() => {
     const body = document.body
+    const frame = frameRef.current
     const gap = window.innerWidth - document.documentElement.clientWidth
     const prev = { overflow: body.style.overflow, paddingRight: body.style.paddingRight }
     body.style.overflow = 'hidden'
     if (gap > 0) body.style.paddingRight = `${gap}px`
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
+      if (event.key === 'Escape') { onClose(); return }
+      if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+        if ((event.target as HTMLElement | null)?.closest('input, textarea')) return
+        event.preventDefault()
+        stepRef.current(event.key === 'ArrowRight' ? 1 : -1)
+        return
+      }
+      /* Tab 이 모달 밖으로 새지 않게 처음과 끝을 잇는다. */
+      if (event.key !== 'Tab' || !frame) return
+      const items = Array.from(
+        frame.querySelectorAll<HTMLElement>('a[href], button:not(:disabled), [tabindex]:not([tabindex="-1"])'),
+      ).filter((el) => el.offsetParent !== null)
+      if (items.length < 2) return
+      const first = items[0]
+      const last = items[items.length - 1]
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
     }
     window.addEventListener('keydown', onKey)
     return () => {
@@ -923,6 +972,13 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
       window.removeEventListener('keydown', onKey)
     }
   }, [onClose])
+
+  /* 탭 제목도 이 작업으로 — 북마크·공유에서 어느 케이스인지 보인다. */
+  useEffect(() => {
+    const before = document.title
+    document.title = `${plate.title} — DE:SIGN MY LIFE`
+    return () => { document.title = before }
+  }, [plate.title])
 
   /* 이미지가 도착한 비율까지만 숫자를 올린다. 캐시에 있어도 0에서 100까지
      한 번은 흐르도록 최소 0.5초를 함께 본다. */
@@ -962,6 +1018,7 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
   return (
     <div className="fl-modal" role="presentation" onClick={onClose}>
       <div
+        ref={frameRef}
         className="fl-modal__frame"
         role="dialog"
         aria-modal="true"
@@ -1021,7 +1078,7 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
 
               {detail?.image && (
                 <section className="fl-modal__section">
-                  <img className="fl-modal__image" src={detail.image} alt={`${plate.title} 작업 이미지`} />
+                  <img className="fl-modal__image" src={stillSrc(detail.image)} srcSet={stillSet(detail.image)} sizes="(min-width: 1240px) 1100px, 92vw" alt={`${plate.title} 작업 이미지`} />
                 </section>
               )}
 
@@ -1048,7 +1105,14 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
                     >
                       {detail.slides.map((src, i) => (
                         <SwiperSlide key={src} className="fl-modal__slide">
-                          <img src={src} alt={`${plate.title} 화면 ${i + 1}`} draggable={false} onLoad={plate.title === '247 GAME' ? () => swiperRef.current?.update() : undefined} />
+                          <img
+                            src={stillSrc(src)}
+                            srcSet={stillSet(src)}
+                            sizes={detail.fullWidthSlides ? '100vw' : '(min-width: 760px) 640px, 80vw'}
+                            alt={`${plate.title} 화면 ${i + 1}`}
+                            draggable={false}
+                            onLoad={plate.title === '247 GAME' ? () => swiperRef.current?.update() : undefined}
+                          />
                         </SwiperSlide>
                       ))}
                     </Swiper>
@@ -1106,7 +1170,7 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
               {detail?.promotionText && <section className="fl-modal__section"><div className="fl-modal__cols"><p style={{ gridColumn: '1 / -1' }}>{detail.promotionText}</p></div></section>}
               {detail?.effectSlides && <PromotionSlider slides={detail.effectSlides} label="게임 이펙트" single />}
               {detail?.effectColumns && <section className="fl-modal__section"><div className="fl-modal__cols">{detail.effectColumns.map((line) => <p key={line}>{line}</p>)}</div></section>}
-              {detail?.bottomSlides && <PromotionSlider slides={detail.bottomSlides} label={`${plate.title} 화면`} natural />}
+              {detail?.bottomSlides && <PromotionSlider slides={detail.bottomSlides} label={`${plate.title} 화면`} natural sizes="(min-width: 760px) 340px, 62vw" />}
               {detail?.bottomColumns && <section className="fl-modal__section"><div className="fl-modal__cols">{detail.bottomColumns.map((line) => <p key={line}>{line}</p>)}</div></section>}
 
               {detail?.video && (
@@ -1118,7 +1182,7 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
 
               {detail?.bottomImage && (
                 <section className="fl-modal__section">
-                  <img className="fl-modal__image" src={detail.bottomImage} alt={`${plate.title} 작업 이미지`} loading="lazy" />
+                  <img className="fl-modal__image" src={stillSrc(detail.bottomImage)} srcSet={stillSet(detail.bottomImage)} sizes="(min-width: 1240px) 1100px, 92vw" alt={`${plate.title} 작업 이미지`} loading="lazy" />
                 </section>
               )}
             </>
