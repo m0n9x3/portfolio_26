@@ -843,7 +843,7 @@ type SwiperHandle = {
   slides: { length: number }
 }
 
-function PromotionSlider({ slides, label }: { slides: string[]; label: string }) {
+function PromotionSlider({ slides, label, single = false, natural = false }: { slides: string[]; label: string; single?: boolean; natural?: boolean }) {
   const swiperRef = useRef<SwiperHandle | null>(null)
   const [active, setActive] = useState(0)
   const [edges, setEdges] = useState({ prev: false, next: false })
@@ -853,9 +853,9 @@ function PromotionSlider({ slides, label }: { slides: string[]; label: string })
   }
 
   return (
-    <section className="fl-modal__section fl-modal__gallery fl-modal__gallery--247" aria-label={label}>
+    <section className={`fl-modal__section fl-modal__gallery ${natural ? 'fl-modal__gallery--natural' : 'fl-modal__gallery--247'}${single ? ' fl-modal__gallery--effects' : ''}`} aria-label={label}>
       <div className="fl-modal__viewport">
-        <Swiper className="fl-modal__slides" slidesPerView="auto" spaceBetween={18} grabCursor
+        <Swiper className="fl-modal__slides" slidesPerView={single ? 1 : 'auto'} spaceBetween={18} grabCursor
           onSwiper={(swiper) => { swiperRef.current = swiper; sync(swiper) }} onSlideChange={sync} onResize={sync}>
           {slides.map((src, i) => (
             <SwiperSlide key={src} className="fl-modal__slide">
@@ -927,7 +927,7 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
   /* 이미지가 도착한 비율까지만 숫자를 올린다. 캐시에 있어도 0에서 100까지
      한 번은 흐르도록 최소 0.5초를 함께 본다. */
   useEffect(() => {
-    const srcs = [detail?.thumb ?? plate.src, ...(detail?.image ? [detail.image] : []), ...(detail?.slides ?? [])]
+    const srcs = [detail?.thumb ?? plate.src, ...(detail?.image ? [detail.image] : []), ...(detail?.slides ?? []), ...(detail?.bottomSlides ?? [])]
     const total = Math.max(1, srcs.length)
     let alive = true
     let done = 0
@@ -1104,6 +1104,10 @@ function PlateModal({ index, onClose }: { index: number; onClose: () => void }) 
                 <PromotionSlider key={group} slides={slides} label={group === 0 ? '게임 스토어 이미지' : '게임 홍보 영상'} />
               ))}
               {detail?.promotionText && <section className="fl-modal__section"><div className="fl-modal__cols"><p style={{ gridColumn: '1 / -1' }}>{detail.promotionText}</p></div></section>}
+              {detail?.effectSlides && <PromotionSlider slides={detail.effectSlides} label="게임 이펙트" single />}
+              {detail?.effectColumns && <section className="fl-modal__section"><div className="fl-modal__cols">{detail.effectColumns.map((line) => <p key={line}>{line}</p>)}</div></section>}
+              {detail?.bottomSlides && <PromotionSlider slides={detail.bottomSlides} label={`${plate.title} 화면`} natural />}
+              {detail?.bottomColumns && <section className="fl-modal__section"><div className="fl-modal__cols">{detail.bottomColumns.map((line) => <p key={line}>{line}</p>)}</div></section>}
 
               {detail?.video && (
                 <section className="fl-modal__section">

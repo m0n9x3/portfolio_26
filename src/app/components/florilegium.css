@@ -427,7 +427,7 @@
 .fl-modal__meta span:first-child { color: var(--color-fg); }
 .fl-modal__intro { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; max-width: 58ch; }
 .fl-modal__intro p { font-size: 16px; line-height: 1.72; color: var(--color-muted); text-wrap: pretty; }
-.fl-modal__image { display: block; width: 100%; height: auto; }
+.fl-modal__image { display: block; width: 100%; height: auto; border-radius: var(--radius-control); }
 video.fl-modal__image + .fl-modal__cols { margin-top: clamp(20px, 3vw, 44px); }
 /* Swiper 루트 — 시트 폭을 그대로 쓰고 3.5장이 보이게 넘긴다. */
 .fl-modal__slides { min-width: 0; }
@@ -453,6 +453,18 @@ video.fl-modal__image + .fl-modal__cols { margin-top: clamp(20px, 3vw, 44px); }
 .fl-modal__gallery--247 .fl-modal__viewport { container-type: inline-size; }
 .fl-modal__gallery--247 .fl-modal__slide { width: max-content; }
 .fl-modal__gallery--247 .fl-modal__slide img { width: auto; max-width: none; height: calc(100cqw * 5 / 12); aspect-ratio: auto; }
+.fl-modal__gallery--effects .fl-modal__slide img { width: 100%; object-fit: contain; }
+/* 하단 슬라이드 — 높이를 화면 폭에 맞춰 정하고, 각 장은 제 비율대로 폭을
+   가져 잘리지 않는다(세로 화면과 영상이 섞여도 된다). */
+.fl-modal__gallery--natural .fl-modal__viewport { container-type: inline-size; }
+.fl-modal__gallery--natural .fl-modal__slide { width: max-content; }
+.fl-modal__gallery--natural .fl-modal__slide img {
+  width: auto;
+  max-width: none;
+  height: clamp(340px, 66cqw, 580px);
+  aspect-ratio: auto;
+  object-fit: contain;
+}
 /* 화살표는 슬라이드 위에 떠 있고, 갈 곳이 없으면 자리에서 사라진다. */
 .fl-modal__viewport { position: relative; }
 .fl-modal__nav {

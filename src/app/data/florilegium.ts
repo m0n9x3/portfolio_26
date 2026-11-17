@@ -31,8 +31,14 @@ export type Plate = {
     fullWidthSlides?: boolean
     promotionSlides?: string[][]
     promotionText?: string
+    effectSlides?: string[]
+    effectColumns?: string[]
     /* 문서 아래 2단 문단 */
     columns?: string[]
+    /* 문서 하단 슬라이드 — 각 장이 제 비율대로 폭을 갖는다. */
+    bottomSlides?: string[]
+    /* 하단 슬라이드 아래 2단 문단 */
+    bottomColumns?: string[]
   }
 }
 
@@ -112,6 +118,35 @@ export const PLATES: Plate[] = [
     },
   },
   {
+    src: asset('/images/moviechart/thumb.jpg'),
+    title: '영화를 만나다 : 무비차트',
+    note: 'BRANDING, UI/UX DESIGN, PUBLISHING',
+    tint: '#e3eef0',
+    still: true,
+    date: '2023-06-07',
+    detail: {
+      meta: 'BRANDING, UI/UX DESIGN, PUBLISHING',
+      intro: [
+        '무비차트 사이트의 리뉴얼 작업을 진행했습니다.',
+        '정체성과 오래된 디자인의 개편에 초점이 있었던 리뉴얼이기 때문에, 사용성은 약간의 개선 정도만 하면서 최대한 디자인 개편에 초점을 두고 작업했었던 리뉴얼 작업입니다.',
+      ],
+      image: asset('/images/moviechart/detail.jpg'),
+      bottomSlides: [
+        asset('/images/moviechart/sc01.jpg'),
+        asset('/images/moviechart/sc02.webp'),
+        asset('/images/moviechart/sc03.jpg'),
+      ],
+      bottomColumns: [
+        '모바일의 경우 UI에 전체적으로 매거진 느낌이 나도록 작업해보았습니다. PC의 영상 스타일은 모바일 사용자 입장에서 데이터 소비량이 과하게 느껴질 수 있어 사용하지 않되, 단순히 나열로 느껴지지 않도록 전체적으로 이미지 매거진 스타일로 작업해보았습니다.',
+        '사이트에서 직접적으로 목적하는 바가 사이트의 컨텐츠를 통해서 -> 영화예매를 하도록 유도하는 것이기 때문에 사이트 어디에서도 영화예매를 할 수 있는 플로팅바를 띄우게 했고, 메뉴바를 같이 이동하게 함으로서 영화예매를 사이트 전체에서 접근하게 하면서도 화면이 무겁거나 복잡해보이는것을 예방했습니다.',
+      ],
+      columns: [
+        '기존 사이트는 단순히 정보를 나열하는 것에 불과했고, 사용자의 행동에 반응하는 효과가 부족했습니다. 특히 사이트 메인에서 너무 다양한 정보를 보여주려 하다보니 확실한 첫 인상이 없었고, 그 정보 제공도 딱히 체계적으로 진행되지 못했습니다. 브랜딩은 단순히 브랜드 이름을 나열하는 수준에 불과했습니다.',
+        '리뉴얼에서는 \'무비차트\'라는 컨셉에 맞게 예매차트를 메인으로 한 히어로 섹션을 구성했습니다. 특히 차트인 되어있는 영화자료에 예고편의 유튜브 링크를 수집하고 있다는 사실을 확인하여, YTplayer 라이브러리와 Swiper를 이용해 hero 섹션을 사용자의 클릭에 반응하는 영화관의 느낌으로 재구성했습니다.',
+      ],
+    },
+  },
+  {
     src: asset('/images/247-game/thumb.jpg'),
     title: '247 GAME',
     note: 'BRANDING, GAME DEVELOP, GAME UI/UX DESIGN, MOTION GRAPHIC DESIGN',
@@ -131,6 +166,11 @@ export const PLATES: Plate[] = [
       promotionSlides: [
         [asset('/images/247-game/store-earth-1.png'), asset('/images/247-game/store-earth-2.png'), asset('/images/247-game/store-casino-1.png'), asset('/images/247-game/store-casino-2.png')],
         [asset('/images/247-game/promo-earth.webp'), asset('/images/247-game/promo-casino.webp')],
+      ],
+      effectSlides: [asset('/images/247-game/effect-02.webp'), asset('/images/247-game/effect-03.webp')],
+      effectColumns: [
+        '블록버스터류 게임에서 엔진을 이용한 이펙트 작업도 진행했습니다. 이펙트와 애니메이션만으로 바리에이션을 주는 형태의 작업이었기 때문에 다양한 이펙트를 고려했었던 기억이 납니다. 베이스 지식이 없던 상태에서 작업을 했었어서 도전적 시도를 하지 못했던게 아쉬웠습니다.',
+        '엔진 특성상 웹 위에 얹어지는 CANVAS 기반으로 작동할 것을 고려해야 했기 떄문에 과한 애니메이션보다는 광원과 파티클을 이용해서 샤랄라(?)한 느낌 위주로 진행했습니다.',
       ],
       promotionText: '프로모션 디자인도 진행하였으며, 관련해 영상도 제작하였습니다. 프로모션 디자인이나 프로모션 영상 양측 다 게임 내 리소스가 많은 편이 아니어서 별도 오브젝트를 제작하거나, 모션그래픽을 최대한 활용하며 작업했던 작업이었습니다. 타겟층이 확연하게 다른 두 게임이었기 때문에 작업하면서 스타일을 확실하게 바꿔보았는데, 목표한 타겟층에 어느정도 일치하게 작업물이 나온 것 같아 만족스러웠던 작업입니다.',
       columns: [
