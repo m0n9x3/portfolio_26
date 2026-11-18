@@ -17,7 +17,7 @@ const POPOVERS: Record<string, string> = {
 
 const STANZAS: Run[][][] = [
   [
-    [{ text: '모두가 비슷해져가는 AI의 시대에,' }],
+    [{ text: '모두가 비슷해져 가는 AI의 시대에,' }],
     [
       { text: '감성', word: '감성' },
       { text: '과 ' },

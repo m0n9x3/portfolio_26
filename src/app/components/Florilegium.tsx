@@ -1078,7 +1078,7 @@ function PlateModal({ index, onClose, onStep }: { index: number; onClose: () => 
 
               {detail?.topVideo && (
                 <section className="fl-modal__section">
-                  <video className="fl-modal__image" src={detail.topVideo} autoPlay muted loop playsInline aria-label={`${plate.title} 인터렉션 영상`} />
+                  <video className="fl-modal__image" src={detail.topVideo} autoPlay muted loop playsInline aria-label={`${plate.title} 인터랙션 영상`} />
                 </section>
               )}
 
@@ -1196,8 +1196,8 @@ function PlateModal({ index, onClose, onStep }: { index: number; onClose: () => 
                 <section className="fl-modal__section">
                   {/* 짧은 클립은 애니메이션 WebP 로도 와서 <img> 로 그린다. */}
                   {/\.(webp|gif)$/i.test(detail.video)
-                    ? <img className="fl-modal__image" src={detail.video} alt={`${plate.title} 스크롤 인터렉션 영상`} loading="lazy" />
-                    : <video className="fl-modal__image" src={detail.video} autoPlay muted loop playsInline aria-label={`${plate.title} 스크롤 인터렉션 영상`} />}
+                    ? <img className="fl-modal__image" src={detail.video} alt={`${plate.title} 스크롤 인터랙션 영상`} loading="lazy" />
+                    : <video className="fl-modal__image" src={detail.video} autoPlay muted loop playsInline aria-label={`${plate.title} 스크롤 인터랙션 영상`} />}
                   {detail.videoText && <div className="fl-modal__cols"><p style={{ gridColumn: '1 / -1' }}>{detail.videoText}</p></div>}
                 </section>
               )}
