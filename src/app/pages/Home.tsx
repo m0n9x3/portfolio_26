@@ -15,22 +15,22 @@ import { cx } from '../lib/cx'
    설명 목록(불릿 텍스트). */
 const PROFILE_TOOLS = {
   design: [
-    'Photoshop 과 같은 그래픽 디자인 툴을 능숙하게 다뤄요',
-    'Illustrator 와 같은 벡터 디자인 툴을 능숙하게 다뤄요',
-    'Figma, adobeXD 와 같은 프로토타이핑, UIUX 툴을 능숙하게 다뤄요',
-    'Zeplin 과 같은 디자인-개발자 협업 툴 사용이 가능해요.',
+    'Photoshop과 같은 그래픽 디자인 툴을 능숙하게 다뤄요',
+    'Illustrator와 같은 벡터 디자인 툴을 능숙하게 다뤄요',
+    'Figma, Adobe XD와 같은 프로토타이핑, UI/UX 툴을 능숙하게 다뤄요',
+    'Zeplin과 같은 디자인-개발자 협업 툴 사용이 가능해요.',
   ],
   front: [
-    'HTML, CSS를 이용한 마크업 작성을 웹표준에 준수하게 할 수 있어요.',
+    'HTML, CSS를 이용한 마크업 작성을 웹 표준에 준수하게 할 수 있어요.',
     'SEO, AEO 등에 대한 이해가 있어요.',
     'AI를 통한 퍼블리싱, 프론트 작업을 정교하고 능숙하게 할 수 있어요.',
-    'Vue, React 와 같은 프레임워크 환경에서 컴포넌트 단위의 마크업 작업이 가능해요.',
+    'Vue, React와 같은 프레임워크 환경에서 컴포넌트 단위의 마크업 작업이 가능해요.',
   ],
   dev: [
     '개발과 협업에 용이한 퍼블리싱이 가능해요.',
-    'JavaScript, jQuery, PHP 를 이용한 개발, 유지보수에 능숙해요.',
+    'JavaScript, jQuery, PHP를 이용한 개발, 유지보수에 능숙해요.',
     'React, Vue와 같은 프레임워크 환경에서의 유지보수가 가능해요.',
-    'Git, SVN 과 같은 형상 관리 시스템 내에서의 버전 관리를 통한 협업이 가능해요.',
+    'Git, SVN과 같은 형상 관리 시스템 내에서의 버전 관리를 통한 협업이 가능해요.',
     'AI를 이용한 개발 작업을 유지보수와 보안을 놓치지 않고 할 수 있어요.',
   ],
 }
@@ -140,7 +140,7 @@ export function Home() {
                 <p className="relative mt-5 sm:mt-4">
                   <ToolPop word="디자인" items={PROFILE_TOOLS.design} />을 섬세하게 다루고,
                   <br />
-                  다양한 환경에서의 <ToolPop word="프론트 작업" items={PROFILE_TOOLS.front} />을 접근성과 웹표준을 고려해 능숙하게 할 수 있어요.
+                  다양한 환경에서의 <ToolPop word="프론트 작업" items={PROFILE_TOOLS.front} />을 접근성과 웹 표준을 고려해 능숙하게 할 수 있어요.
                 </p>
                 <p className="relative mt-5 sm:mt-4">
                   <ToolPop word="개발 지식" items={PROFILE_TOOLS.dev} />이 있어 개발자와의 협업에도 능한 편이고,
@@ -148,7 +148,7 @@ export function Home() {
                   AI를 수준급으로 다룰 수 있어요.
                 </p>
                 <p className="relative mt-5 sm:mt-4">
-                  UX 에 관심이 많아 사용자를 생각한 섬세한 작업을 하는 것을 좋아해요.
+                  UX에 관심이 많아 사용자를 생각한 섬세한 작업을 하는 것을 좋아해요.
                   <br />
                   다양한 사람들과 함께 상상을 현실로 만들어 가려고 해요.
                 </p>

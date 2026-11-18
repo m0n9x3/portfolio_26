@@ -1089,13 +1089,13 @@ function PlateModal({ index, onClose, onStep }: { index: number; onClose: () => 
               )}
 
               {detail?.slides && (
-                <section className={`fl-modal__section fl-modal__gallery${detail.fullWidthSlides ? ' fl-modal__gallery--full' : ''}${plate.title === '247 GAME' ? ' fl-modal__gallery--247' : ''}`} aria-label="작업 이미지 슬라이드">
+                <section className={`fl-modal__section fl-modal__gallery${detail.fullWidthSlides ? ' fl-modal__gallery--full' : ''}${plate.slug === '247-game' ? ' fl-modal__gallery--247' : ''}`} aria-label="작업 이미지 슬라이드">
                   <div className="fl-modal__viewport">
                     {/* 3.5장이 보이고 남은 한 장은 끌어서 넘긴다. 좁은 화면에서는
                         1.2장 — 다음 장이 살짝 걸쳐 넘길 수 있다는 걸 알린다. */}
                     <Swiper
                       className="fl-modal__slides"
-                      slidesPerView={plate.title === '247 GAME' ? 'auto' : detail.fullWidthSlides ? 1 : 3.5}
+                      slidesPerView={plate.slug === '247-game' ? 'auto' : detail.fullWidthSlides ? 1 : 3.5}
                       spaceBetween={18}
                       breakpoints={detail.fullWidthSlides ? undefined : {
                         0: { slidesPerView: 1.2, spaceBetween: 10 },
@@ -1117,7 +1117,7 @@ function PlateModal({ index, onClose, onStep }: { index: number; onClose: () => 
                             sizes={detail.fullWidthSlides ? '100vw' : '(min-width: 760px) 640px, 80vw'}
                             alt={`${plate.title} 화면 ${i + 1}`}
                             draggable={false}
-                            onLoad={plate.title === '247 GAME' ? () => swiperRef.current?.update() : undefined}
+                            onLoad={plate.slug === '247-game' ? () => swiperRef.current?.update() : undefined}
                           />
                         </SwiperSlide>
                       ))}

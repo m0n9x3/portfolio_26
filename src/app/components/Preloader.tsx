@@ -81,8 +81,8 @@ export function Preloader() {
         </defs>
       </svg>
       <div className="pre-message" aria-hidden="true" style={{ '--progress': `${count}%` } as CSSProperties}>
-        잠시만 기다려주세요 :)
-        <span className="pre-message-fill">잠시만 기다려주세요 :)</span>
+        잠시만 기다려 주세요 :)
+        <span className="pre-message-fill">잠시만 기다려 주세요 :)</span>
       </div>
       {/* 헤더와 같은 좌우 — 같은 최대 폭, 같은 안쪽 여백. */}
       <div className="pre-inner">
