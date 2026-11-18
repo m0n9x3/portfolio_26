@@ -1066,15 +1066,21 @@ function PlateModal({ index, onClose, onStep }: { index: number; onClose: () => 
                     <span>{fmtDate(PLATE_DAYS[index])}</span>
                   </div>
                   {detail && (
-                    <div className={`fl-modal__intro${detail.link ? ' fl-modal__intro--linked' : ''}`}>
+                    <div className={`fl-modal__intro${detail.link && detail.linkAfterColumn === undefined ? ' fl-modal__intro--linked' : ''}`}>
                       {detail.intro.map((line) => (
                         <p key={line}>{line}</p>
                       ))}
-                      {detail.link && <a href={detail.link} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{detail.linkLabel ?? '포트폴리오 사이트 보기 ↗'}</a>}
+                      {detail.link && detail.linkAfterColumn === undefined && <a href={detail.link} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{detail.linkLabel ?? '포트폴리오 사이트 보기 ↗'}</a>}
                     </div>
                   )}
                 </div>
               </header>
+
+              {detail?.topVideo && (
+                <section className="fl-modal__section">
+                  <video className="fl-modal__image" src={detail.topVideo} autoPlay muted loop playsInline aria-label={`${plate.title} 인터렉션 영상`} />
+                </section>
+              )}
 
               {detail?.image && (
                 <section className="fl-modal__section">
@@ -1157,12 +1163,28 @@ function PlateModal({ index, onClose, onStep }: { index: number; onClose: () => 
               {detail?.columns && (
                 <section className="fl-modal__section">
                   <div className="fl-modal__cols">
-                    {detail.columns.map((line, _, columns) => (
-                      <p key={line} style={columns.length === 1 ? { gridColumn: '1 / -1' } : undefined}>{line}</p>
+                    {detail.columns.map((line, i, columns) => (
+                      <p key={line} style={columns.length === 1 ? { gridColumn: '1 / -1' } : undefined}>
+                        {line}
+                        {/* 링크를 문단 하나 뒤에 붙이라고 했으면 그 문단 칸 안에서 바로 아래에 그린다. */}
+                        {detail.link && detail.linkAfterColumn === i && (
+                          <span className="block pt-3">
+                            <a href={detail.link} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{detail.linkLabel ?? '포트폴리오 사이트 보기 ↗'}</a>
+                          </span>
+                        )}
+                      </p>
                     ))}
                   </div>
                 </section>
               )}
+
+              {detail?.blocks?.map((block) => (
+                <section key={block.image ?? block.text} className="fl-modal__section">
+                  {block.image
+                    ? <img className="fl-modal__image" src={stillSrc(block.image)} srcSet={stillSet(block.image)} sizes="(min-width: 1240px) 1100px, 92vw" alt={`${plate.title} 작업 이미지`} loading="lazy" />
+                    : <div className="fl-modal__cols"><p style={{ gridColumn: '1 / -1' }}>{block.text}</p></div>}
+                </section>
+              ))}
 
               {detail?.promotionSlides?.map((slides, group) => (
                 <PromotionSlider key={group} slides={slides} label={group === 0 ? '게임 스토어 이미지' : '게임 홍보 영상'} />
@@ -1170,15 +1192,18 @@ function PlateModal({ index, onClose, onStep }: { index: number; onClose: () => 
               {detail?.promotionText && <section className="fl-modal__section"><div className="fl-modal__cols"><p style={{ gridColumn: '1 / -1' }}>{detail.promotionText}</p></div></section>}
               {detail?.effectSlides && <PromotionSlider slides={detail.effectSlides} label="게임 이펙트" single />}
               {detail?.effectColumns && <section className="fl-modal__section"><div className="fl-modal__cols">{detail.effectColumns.map((line) => <p key={line}>{line}</p>)}</div></section>}
-              {detail?.bottomSlides && <PromotionSlider slides={detail.bottomSlides} label={`${plate.title} 화면`} natural sizes="(min-width: 760px) 340px, 62vw" />}
-              {detail?.bottomColumns && <section className="fl-modal__section"><div className="fl-modal__cols">{detail.bottomColumns.map((line) => <p key={line}>{line}</p>)}</div></section>}
-
               {detail?.video && (
                 <section className="fl-modal__section">
-                  <video className="fl-modal__image" src={detail.video} autoPlay muted loop playsInline aria-label={`${plate.title} 스크롤 인터렉션 영상`} />
+                  {/* 짧은 클립은 애니메이션 WebP 로도 와서 <img> 로 그린다. */}
+                  {/\.(webp|gif)$/i.test(detail.video)
+                    ? <img className="fl-modal__image" src={detail.video} alt={`${plate.title} 스크롤 인터렉션 영상`} loading="lazy" />
+                    : <video className="fl-modal__image" src={detail.video} autoPlay muted loop playsInline aria-label={`${plate.title} 스크롤 인터렉션 영상`} />}
                   {detail.videoText && <div className="fl-modal__cols"><p style={{ gridColumn: '1 / -1' }}>{detail.videoText}</p></div>}
                 </section>
               )}
+
+              {detail?.bottomSlides && <PromotionSlider slides={detail.bottomSlides} label={`${plate.title} 화면`} natural sizes="(min-width: 760px) 340px, 62vw" />}
+              {detail?.bottomColumns && <section className="fl-modal__section"><div className="fl-modal__cols">{detail.bottomColumns.map((line) => <p key={line}>{line}</p>)}</div></section>}
 
               {detail?.bottomImage && (
                 <section className="fl-modal__section">
