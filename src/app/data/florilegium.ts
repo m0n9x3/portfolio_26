@@ -221,6 +221,29 @@ export const PLATES: Plate[] = [
     },
   },
   {
+    slug: 'hanyang-iclass-yangju',
+    src: asset('/images/hanyang-iclass-yangju/thumb.jpg'),
+    title: '한양 아이클래스 양주',
+    note: 'UI/UX DESIGN / PUBLISHING',
+    tint: '#333f41',
+    still: true,
+    date: '2026-08-17',
+    detail: {
+      meta: 'UI/UX DESIGN / PUBLISHING',
+      intro: ['한양 아이클래스 양주 반응형 웹사이트의 디자인 및 퍼블리싱을 진행했습니다.'],
+      /* 35초 클립은 애니 WebP 로 뜨면 배포 한도를 넘어 MP4(무음 H.264)로 둔다. */
+      topVideo: asset('/images/hanyang-iclass-yangju/scroll.mp4'),
+      link: 'https://github.com/m0n9x3/fullscroll',
+      linkLabel: 'fullScroll 라이브러리 (GitHub) ↗',
+      /* fullScroll 을 설명하는 2단 문단 바로 뒤에 링크를 둔다. */
+      linkAfterColumn: 1,
+      columns: [
+        '영상 AI와 자체 제작한 fullScroll 라이브러리를 적극 활용한 프로젝트입니다. 한양 아이클래스 양주의 \'프리미엄스러움\'을 보여주기 위해서 드론샷/타임랩스 스타일의 영상을 AI를 통해서 제작하여 채용했습니다.',
+        '또한 fullScroll 라이브러리와 GSAP을 활용해 전환효과와 스크롤 이동에 부드러움과 변칙을 지속적으로 주어 사이트 자체가 프리미엄틱하게 보일 수 있도록 작업했습니다.',
+      ],
+    },
+  },
+  {
     slug: 'gh-biz-gwanggyo',
     src: asset('/images/gh-biz-gwanggyo/thumb.jpg'),
     title: 'GH BIZ&광교',
