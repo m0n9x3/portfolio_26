@@ -805,7 +805,8 @@ export function Florilegium() {
                 ))}
               </span>
               <span className="fl-time__line"><i ref={fillRef} /></span>
-              <span className="fl-time__end">2026.11.06</span>
+              {/* 레인지의 끝은 마지막 판의 날짜 — 판을 더하면 같이 늘어난다. */}
+              <span className="fl-time__end">{fmtDate(PLATE_DAYS[PLATE_DAYS.length - 1])}</span>
             </div>
 
             {!ready && (

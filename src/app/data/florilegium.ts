@@ -221,6 +221,26 @@ export const PLATES: Plate[] = [
     },
   },
   {
+    slug: 'yuseunghan-naedeul',
+    src: asset('/images/yuseunghan-naedeul/thumb.jpg'),
+    title: '유승한내들',
+    note: 'UI/UX DESIGN, PUBLISHING',
+    tint: '#e3eef0',
+    still: true,
+    date: '2025-08-19',
+    detail: {
+      meta: 'UI/UX DESIGN, PUBLISHING',
+      intro: ['유승한내들의 반응형 웹사이트 디자인 및 퍼블리싱을 진행했습니다.'],
+      blocks: [
+        { image: asset('/images/yuseunghan-naedeul/gal-08-01.jpg') },
+        {
+          text: '유승한내들의 반응형 웹사이트 디자인 및 퍼블리싱을 진행했습니다. 젊고, 건강하고, 푸르고, 살아있고, 생기있는 디자인을 만들어보고 싶다는 생각으로 도전적인 시도를 많이 해봤던 디자인입니다.',
+        },
+        { image: asset('/images/yuseunghan-naedeul/gal-08-02.jpg') },
+      ],
+    },
+  },
+  {
     slug: 'hanyang-iclass-yangju',
     src: asset('/images/hanyang-iclass-yangju/thumb.jpg'),
     title: '한양 아이클래스 양주',
@@ -278,7 +298,7 @@ export const PLATES: Plate[] = [
 ]
 
 /* 날짜는 기본으로 71일 간격, 22.01.01 부터. 실제 날짜를 아는 판은 date 로
-   덮어쓴다. (하단 레인지의 끝 26.11.06 은 현재 고정 표기) */
+   덮어쓴다. (하단 레인지의 끝은 마지막 판의 날짜) */
 export const DATE_STEP_DAYS = 71
 const DAY_MS = 86_400_000
 const START_MS = Date.UTC(2022, 0, 1)
