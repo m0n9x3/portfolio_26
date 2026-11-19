@@ -1,5 +1,5 @@
 import { ArrowUpRight } from 'lucide-react'
-import { asset, imageSet, imageSrc } from '../lib/asset'
+import { asset, imageSet, imageSrc, stillSet, stillSrc } from '../lib/asset'
 import { useEffect, useRef, useState } from 'react'
 
 import { site } from '../../data/site'
@@ -37,12 +37,30 @@ const PROFILE_TOOLS = {
 
 /* What I do 아래 링크 목록 — 왼쪽이 제목, 오른쪽이 일한 곳(in COMPANY).
    판이나 아이콘 없이 텍스트만 두고, 회사 이름만 링크로 읽히게 한다.
-   실제 회사·주소로 바꿀 때는 이 배열만 고치면 된다. */
-const CREDITS = [
-  { title: 'Brand identity', places: ['BDSCAST'], image: asset('/images/aurora.jpg') },
-  { title: 'Product design', places: ['MECROSS'], image: asset('/images/meridian.jpg') },
-  { title: 'Websites', places: ['BDSCAST'], image: asset('/images/halcyon.jpg') },
-  { title: 'Creative development', places: ['MECROSS'], image: asset('/images/fold.jpg') },
+   실제 회사·주소로 바꿀 때는 이 배열만 고치면 된다.
+   image 는 호버 때 커서를 따라오는 미리보기, link 는 줄을 눌렀을 때 열릴
+   주소. 미리보기에는 정지 사진(jpg·png)과 움직이는 WebP 를 둘 다 쓸 수
+   있다 — 움직이는 파일은 파생본 없이 원본을 그대로 내려받는다. */
+type Credit = {
+  title: string
+  places: string[]
+  image: string
+  link: string
+}
+
+const CREDITS: Credit[] = [
+  {
+    title: 'FullScrollJS',
+    places: ['bdsCAST'],
+    image: asset('/images/fullscroll.webp'),
+    link: 'https://app.notion.com/p/harok96y/FullScrollJS-410ab5b16a3080e1b59fe6b5844eec5e?source=copy_link',
+  },
+  {
+    title: 'bdsAdmin',
+    places: ['bdsCAST'],
+    image: asset('/images/bdsadmin.png'),
+    link: 'https://app.notion.com/p/harok96y/BDSCAST-DASHBOARD-410ab5b16a30805e9e6acbcd975a8a51?source=copy_link',
+  },
 ]
 
 export function Home() {
@@ -246,12 +264,15 @@ function Services() {
       <ul className="relative z-10 border-t border-line" onPointerLeave={() => setActive(null)}>
         {CREDITS.map((row, i) => (
           <li key={row.title} className="border-b border-line">
-            <div
+            <a
               onPointerEnter={(event) => {
                 if (event.pointerType !== 'mouse') return
                 point.current = { x: event.clientX, y: event.clientY }
                 setActive(i)
               }}
+              href={row.link}
+              target="_blank"
+              rel="noreferrer"
               className="group grid grid-cols-1 items-baseline gap-y-1.5 py-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-x-6 sm:py-7"
             >
               <span className="font-display text-[26px] leading-[1.1] text-fg/60 transition-colors duration-300 group-hover:text-fg sm:text-[42px]">
@@ -266,7 +287,7 @@ function Services() {
                 ))}
                 <ArrowUpRight className="size-4 shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </span>
-            </div>
+            </a>
           </li>
         ))}
       </ul>
@@ -286,8 +307,8 @@ function Services() {
           {CREDITS.map((row, i) => (
             <img
               key={row.title}
-              src={imageSrc(row.image, 1100)}
-              srcSet={imageSet(row.image, [480, 1100])}
+              src={stillSrc(row.image)}
+              srcSet={stillSet(row.image)}
               sizes="260px"
               alt=""
               draggable={false}
