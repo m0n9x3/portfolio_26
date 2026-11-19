@@ -9,3 +9,7 @@ dist
 
 artifacts
 .freebuff
+
+# 화면 확인용으로 찍은 캡처 — 사이트에서 쓰지 않는다.
+/gallery-v1.png
+/gallery-v1-work.png
